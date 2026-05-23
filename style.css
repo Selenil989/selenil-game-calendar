@@ -406,12 +406,19 @@ body {
 
 
 /* =========================
-   모바일 화면 최적화
+   모바일 최적화
 ========================= */
 
 @media (max-width: 768px) {
+
   body {
-    padding: 10px;
+    padding: 8px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: none;
+    overflow-x: auto;
   }
 
   .top-bar {
@@ -423,6 +430,7 @@ body {
   .top-buttons {
     width: 100%;
     flex-wrap: wrap;
+    gap: 8px;
   }
 
   .top-buttons button {
@@ -431,10 +439,23 @@ body {
     font-size: 13px;
   }
 
+  #calendar {
+    width: 100%;
+    min-height: 600px;
+    display: block;
+  }
+
   .fc {
+    width: 100%;
+    min-width: 720px;
+    min-height: 600px;
     padding: 10px;
     border-radius: 12px;
-    overflow-x: auto;
+  }
+
+  .fc-view-harness,
+  .fc-view-harness-active {
+    min-height: 600px !important;
   }
 
   .fc-toolbar {
@@ -468,4 +489,5 @@ body {
     max-width: 400px;
     padding: 20px;
   }
+
 }
