@@ -110,6 +110,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const imageInput =
     getEl("eventImage");
+
+
   // =========================
   // 메인 이벤트 이미지 위치 슬라이더
   // =========================
@@ -205,6 +207,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const subImageInput =
     getEl("subEventImage");
+
   // =========================
   // 하위 이벤트 이미지 위치 슬라이더
   // =========================
@@ -222,7 +225,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const subImageZoom =
     getEl("subImageZoom");
 
-      // =========================
+  // =========================
   // 현재 편집 중인 메인 이벤트의
   // 실제 캘린더 이미지 찾기
   // =========================
@@ -254,9 +257,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     return null;
-
   }
-
 
 
   // =========================
@@ -265,92 +266,39 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   function updateMainPreview() {
 
+    /* 실제 캘린더 이미지 찾기 */
     const img =
       findCurrentEventCalendarImage();
 
     if (!img) return;
 
+    /* 슬라이더 값 가져오기 */
     const posX =
       safeValue(eventImagePosX, 50);
 
     const posY =
       safeValue(eventImagePosY, 50);
 
+    /* 확대 비율 */
     const zoom =
       safeValue(eventImageZoom, 100);
 
+    /* 실제 캘린더 이미지 위치 변경 */
     img.style.objectPosition =
       `${posX}% ${posY}%`;
 
+    /* 확대 적용 */
     img.style.transform =
       `scale(${Number(zoom) / 100})`;
 
+    /* 확대 기준점 */
     img.style.transformOrigin =
       `${posX}% ${posY}%`;
 
   }
 
-
-
   // =========================
-  // 현재 편집 중인 하위 이벤트의
-  // 실제 상세창 카드 이미지 찾기
-  // =========================
-
-  function findCurrentSubEventCardImage() {
-
-    if (!currentSubEvent) return null;
-
-    const card =
-      document.querySelector(
-        `.sub-event-card[data-sub-event-id="${currentSubEvent.id}"]`
-      );
-
-    if (!card) return null;
-
-    return card.querySelector(
-      ".sub-event-image-wrap img"
-    );
-
-  }
-
-
-
-  // =========================
-  // 하위 이벤트 실제 카드 이미지 실시간 반영
-  // =========================
-
-  function updateSubPreview() {
-
-    const img =
-      findCurrentSubEventCardImage();
-
-    if (!img) return;
-
-    const posX =
-      safeValue(subImagePosX, 50);
-
-    const posY =
-      safeValue(subImagePosY, 50);
-
-    const zoom =
-      safeValue(subImageZoom, 100);
-
-    img.style.objectPosition =
-      `${posX}% ${posY}%`;
-
-    img.style.transform =
-      `scale(${Number(zoom) / 100})`;
-
-    img.style.transformOrigin =
-      `${posX}% ${posY}%`;
-
-  }
-
-
-
-  // =========================
-  // 이미지 위치 / 확대 슬라이더 이벤트 연결
+  // 메인 이미지 위치 슬라이더 이벤트 연결
   // =========================
 
   eventImagePosX?.addEventListener(
@@ -368,20 +316,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     updateMainPreview
   );
 
-  subImagePosX?.addEventListener(
-    "input",
-    updateSubPreview
-  );
-
-  subImagePosY?.addEventListener(
-    "input",
-    updateSubPreview
-  );
-
-  subImageZoom?.addEventListener(
-    "input",
-    updateSubPreview
-  );
+  // =========================
+  // 하위 이벤트 미리보기 실시간 반영
+  // =========================
 
 
   const saveSubEventBtn =
@@ -421,8 +358,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let uploadedImagePosX = 50;
   let uploadedImagePosY = 50;
-
-  /* 메인 이벤트 이미지 확대값 */
+  // 메인 이벤트 이미지 확대값
   let uploadedImageZoom = 100;
 
   let uploadedSubImage = "";
@@ -435,8 +371,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let uploadedSubImagePosX = 50;
   let uploadedSubImagePosY = 50;
-
-  /* 하위 이벤트 이미지 확대값 */
+  // 하위 이벤트 이미지 확대값
   let uploadedSubImageZoom = 100;
 
   let calendar = null;
@@ -451,15 +386,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let isEditingMainEvent = false;
 
-  /* 메인 이벤트 원래 이미지 위치 / 확대값 백업 */
+  /* 원래 이미지 위치 백업 */
   let originalImagePosX = 50;
   let originalImagePosY = 50;
-  let originalImageZoom = 100;
-
-  /* 하위 이벤트 원래 이미지 위치 / 확대값 백업 */
-  let originalSubImagePosX = 50;
-  let originalSubImagePosY = 50;
-  let originalSubImageZoom = 100;
 
 
 
@@ -620,6 +549,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // 이미지 위치
         imagePosX: item.image_pos_x ?? 50,
         imagePosY: item.image_pos_y ?? 50,
+
         imageZoom: item.image_zoom ?? 100,
 
         category: item.category || CATEGORY_DEFAULT,
@@ -872,9 +802,6 @@ document.addEventListener("DOMContentLoaded", async function () {
           image_pos_y:
             subData.image_pos_y ?? 50,
 
-          image_zoom:
-            subData.image_zoom ?? 100,
-
         })
         .eq("id", subData.id);
 
@@ -1111,17 +1038,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedImageZoom =
       event.extendedProps.imageZoom ?? 100;
 
-    /* 메인 이벤트 원래 이미지 위치 / 확대값 백업 */
+    // 원래 값 백업
     originalImagePosX =
       uploadedImagePosX;
 
     originalImagePosY =
       uploadedImagePosY;
 
-    originalImageZoom =
-      uploadedImageZoom;
-
-    /* 메인 이벤트 편집 상태 ON */
+    // 편집 상태 시작
     isEditingMainEvent = true;
 
     // 슬라이더 UI 반영
@@ -1159,8 +1083,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     currentEvent =
       null;
 
-    isEditingMainEvent = false;
-
     setValue(titleInput, "");
 
     setValue(startInput, startDate);
@@ -1186,7 +1108,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedImagePosY = 50;
     uploadedImageZoom = 100;
 
-    // 메인 이미지 위치 / 확대 슬라이더 초기화
+    // 메인 이미지 위치 슬라이더 초기화
     setValue(eventImagePosX, 50);
     setValue(eventImagePosY, 50);
     setValue(eventImageZoom, 100);
@@ -1194,6 +1116,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (imageInput) {
       imageInput.value = "";
     }
+
+
     show(eventModal);
 
   }
@@ -1284,26 +1208,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   function getCategoryBadge(category) {
 
-  const safeCategory =
-    category || CATEGORY_DEFAULT;
+    const safeCategory =
+      category || CATEGORY_DEFAULT;
 
-  const categoryClassMap = {
-    "업데이트": "category-update",
-    "픽업": "category-pickup",
-    "복각": "category-rerun",
-    "공방": "category-workshop",
-  };
+    return `
+      <span class="category-badge category-${safeCategory}">
+        ${safeCategory}
+      </span>
+    `;
 
-  const categoryClass =
-    categoryClassMap[safeCategory] || "category-update";
-
-  return `
-    <span class="category-badge ${categoryClass}">
-      ${safeCategory}
-    </span>
-  `;
-
-}
+  }
 
 
 
@@ -1334,10 +1248,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       card.className =
         "sub-event-card";
 
-      /* 하위 이벤트 카드를 정확히 찾기 위한 id */
-      card.dataset.subEventId =
-        subEvent.id;
-
       card.style.setProperty(
         "--event-color",
         subEvent.color || "#1f2937"
@@ -1355,9 +1265,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       const imagePosY =
         subEvent.image_pos_y ?? 50;
 
-      const imageZoom =
-        subEvent.image_zoom ?? 100;
-
       // =========================
       // 하위 이벤트 이미지 HTML 생성
       // 이미지가 있으면 cover 방식으로 꽉 채움
@@ -1373,11 +1280,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         <!-- 하위 이벤트 카드 이미지 -->
         <img
           src="${subEvent.image_url}"
-          style="
-            object-position: ${imagePosX}% ${imagePosY}%;
-            transform: scale(${Number(imageZoom) / 100});
-            transform-origin: ${imagePosX}% ${imagePosY}%;
-          "
+          style="object-position: ${imagePosX}% ${imagePosY}%;"
         />
 
       </div>
@@ -1409,40 +1312,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             </div>
 
           </div>
-
-          ${isAdmin ? `
-            <!-- 관리자 전용 하위 이벤트 수정 버튼 -->
-            <button
-              type="button"
-              class="edit-sub-icon"
-              title="하위 이벤트 수정"
-            >
-              ✏️
-            </button>
-          ` : ""}
         `;
 
       if (isAdmin) {
 
-        const editSubButton =
-          card.querySelector(".edit-sub-icon");
+        card.addEventListener(
+          "dblclick",
+          () => {
 
-        if (editSubButton) {
+            openSubEventModal(subEvent);
 
-          editSubButton.addEventListener(
-            "click",
-            (e) => {
-
-              /* 카드 클릭 이벤트와 충돌 방지 */
-              e.preventDefault();
-              e.stopPropagation();
-
-              openSubEventModal(subEvent);
-
-            }
-          );
-
-        }
+          }
+        );
 
       }
 
@@ -1590,19 +1471,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedSubImagePosY =
       subEvent?.image_pos_y ?? 50;
 
-    uploadedSubImageZoom =
-      subEvent?.image_zoom ?? 100;
-
-    /* 하위 이벤트 원래 이미지 위치 / 확대값 백업 */
-    originalSubImagePosX =
-      uploadedSubImagePosX;
-
-    originalSubImagePosY =
-      uploadedSubImagePosY;
-
-    originalSubImageZoom =
-      uploadedSubImageZoom;
-
     // 슬라이더 반영
     setValue(
       subImagePosX,
@@ -1614,15 +1482,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       uploadedSubImagePosY
     );
 
-    setValue(
-      subImageZoom,
-      uploadedSubImageZoom
-    );
-
 
     if (subImageInput) {
       subImageInput.value = "";
     }
+
 
     if (deleteSubEventBtn) {
 
@@ -1785,6 +1649,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           });
 
+        /* 편집 상태 OFF */
+        isEditingMainEvent = false;
+
+        /* 저장 후 현재 이벤트 참조 해제 */
+        currentEvent = null;
+
         applySearchFilter();
 
         showToast("이동 저장 완료");
@@ -1835,23 +1705,23 @@ document.addEventListener("DOMContentLoaded", async function () {
             ? `
               <div class="event-image-zone">
                 <!-- =========================
-     메인 이벤트 이미지
-========================= -->
-<img
-  src="${image}"
-  style="
-    object-position:
-      ${imagePosX}%
-      ${imagePosY}%;
+                      메인 이벤트 이미지
+                  ========================= -->
+                  <img
+                    src="${image}"
+                    style="
+                      object-position:
+                        ${imagePosX}%
+                        ${imagePosY}%;
 
-    transform:
-      scale(${Number(imageZoom) / 100});
+                      transform:
+                        scale(${Number(imageZoom) / 100});
 
-    transform-origin:
-      ${imagePosX}%
-      ${imagePosY}%;
-  "
-/>
+                      transform-origin:
+                        ${imagePosX}%
+                        ${imagePosY}%;
+                    "
+                  />
               </div>
             `
             : `<div class="no-image-fill"></div>`;
@@ -1945,9 +1815,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             if (isEditingMainEvent) return;
 
-            openDetailModal(
-              info.event
-            );
+            openDetailModal(info.event);
 
           }
         );
@@ -2137,6 +2005,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         this.files[0];
 
       if (!file) return;
+
+      const previewUrl =
+        URL.createObjectURL(file);
+
 
       uploadedColor =
         await extractAverageColor(file);
@@ -2358,6 +2230,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       /* 현재 편집 이벤트 참조 해제 */
       currentEvent = null;
 
+      /* 편집창 닫기 */
       hide(eventModal);
 
     }
@@ -2549,18 +2422,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             safeValue(subImagePosY, 50)
           ),
 
-        image_zoom:
-          Number(
-            safeValue(subImageZoom, 100)
-          ),
-
       };
 
-      const isEditingSubEvent =
-        Boolean(currentSubEvent);
-
       const ok =
-        isEditingSubEvent
+        currentSubEvent
           ? await updateSubEventInSupabase(subData)
           : await insertSubEventToSupabase(subData);
 
@@ -2573,13 +2438,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       renderSubEvents();
 
-      currentSubEvent =
-        null;
-
       hide(subEventModal);
 
       showToast(
-        isEditingSubEvent
+        currentSubEvent
           ? "하위 이벤트 수정 완료"
           : "하위 이벤트 추가 완료"
       );
@@ -2620,9 +2482,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       renderSubEvents();
 
-      currentSubEvent =
-        null;
-
       hide(subEventModal);
 
       showToast("하위 이벤트 삭제 완료");
@@ -2650,22 +2509,14 @@ document.addEventListener("DOMContentLoaded", async function () {
           img.style.objectPosition =
             `${originalImagePosX}% ${originalImagePosY}%`;
 
-          img.style.transform =
-            `scale(${Number(originalImageZoom) / 100})`;
-
-          img.style.transformOrigin =
-            `${originalImagePosX}% ${originalImagePosY}%`;
-
         }
 
       }
 
-      /* 메인 이벤트 편집 상태 OFF */
+      /* 편집 상태 OFF */
       isEditingMainEvent = false;
 
-      /* 현재 편집 이벤트 참조 해제 */
-      currentEvent = null;
-
+      /* 편집창 닫기 */
       hide(eventModal);
 
     }
@@ -2683,25 +2534,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   closeSubEventBtn?.addEventListener(
     "click",
     () => {
-
-      const img =
-        findCurrentSubEventCardImage();
-
-      if (img) {
-
-        img.style.objectPosition =
-          `${originalSubImagePosX}% ${originalSubImagePosY}%`;
-
-        img.style.transform =
-          `scale(${Number(originalSubImageZoom) / 100})`;
-
-        img.style.transformOrigin =
-          `${originalSubImagePosX}% ${originalSubImagePosY}%`;
-
-      }
-
-      currentSubEvent =
-        null;
 
       hide(subEventModal);
 
@@ -2731,10 +2563,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (e.target === eventModal) {
 
+        /* 편집 상태 OFF */
         isEditingMainEvent = false;
+
+        /* 현재 편집 이벤트 참조 해제 */
         currentEvent = null;
 
         hide(eventModal);
+
       }
 
     }
@@ -2756,26 +2592,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     (e) => {
 
       if (e.target === subEventModal) {
-
-        const img =
-          findCurrentSubEventCardImage();
-
-        if (img) {
-
-          img.style.objectPosition =
-            `${originalSubImagePosX}% ${originalSubImagePosY}%`;
-
-          img.style.transform =
-            `scale(${Number(originalSubImageZoom) / 100})`;
-
-          img.style.transformOrigin =
-            `${originalSubImagePosX}% ${originalSubImagePosY}%`;
-
-        }
-
-        currentSubEvent =
-          null;
-
         hide(subEventModal);
       }
 

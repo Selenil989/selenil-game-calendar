@@ -155,6 +155,7 @@ body {
   object-fit: cover;
   object-position: center;
   display: block;
+  transform-origin: center;
 }
 
 /* 이미지와 대표색이 자연스럽게 이어지는 그라데이션 */
@@ -199,11 +200,9 @@ body {
   inset: 0;
 
   background:
-    linear-gradient(
-      to top,
-      rgba(0,0,0,0.85),
-      rgba(0,0,0,0.15)
-    );
+    linear-gradient(to top,
+      rgba(0, 0, 0, 0.85),
+      rgba(0, 0, 0, 0.15));
 
   z-index: 2;
 
@@ -213,7 +212,8 @@ body {
 .title {
   position: absolute;
 
-  top: 16px;   /* 뱃지 바로 아래 */
+  top: 16px;
+  /* 뱃지 바로 아래 */
   left: 10px;
 
   font-weight: bold;
@@ -224,7 +224,7 @@ body {
   color: white;
 
   text-shadow:
-    0 1px 3px rgba(0,0,0,0.8);
+    0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 
@@ -286,6 +286,7 @@ body {
 
   box-sizing: border-box;
 }
+
 
 /* =========================
    모달 버튼
@@ -583,6 +584,10 @@ body {
   resize: vertical;
 }
 
+
+
+
+
 /* =========================
    카테고리 뱃지
 ========================= */
@@ -613,7 +618,7 @@ body {
 }
 
 .category-update {
-  background: linear-gradient(135deg, #d3a40a, #c55900);
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
 }
 
 .category-pickup {
@@ -621,12 +626,7 @@ body {
 }
 
 .category-rerun {
-  background: linear-gradient(135deg, #db2777, #9333ea);
-}
-
-/* 공방 카테고리 뱃지 */
-.category-workshop {
-  background: linear-gradient(135deg, #053896, #0992aa);
+  background: linear-gradient(135deg, #d97706, #dc2626);
 }
 
 .event-badge {
@@ -722,36 +722,29 @@ body {
 
 /* =========================
    하위 이벤트 카드
-   메인 이벤트와 동일한 이미지 + 대표색 연결 구조
+   메인 이벤트와 동일 구조
 ========================= */
 
 .sub-event-card {
   position: relative;
 
-  min-height: 120px;
-
   overflow: hidden;
   border-radius: 16px;
 
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       var(--event-color, #1f2937) 0%,
-      color-mix(
-        in srgb,
+      color-mix(in srgb,
         var(--event-color, #1f2937) 75%,
-        #000 25%
-      ) 100%
-    );
+        #000 25%) 100%);
 
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-/* =========================
-   하위 이벤트 이미지 영역
-========================= */
 
+
+/* 이미지 영역 */
 .sub-event-image-wrap {
   position: absolute;
 
@@ -762,23 +755,17 @@ body {
   width: 34%;
 
   overflow: hidden;
-
-  z-index: 1;
 }
 
-/* =========================
-   하위 이벤트 실제 이미지
-   슬라이더가 object-position / transform을 덮어씀
-========================= */
-
+/* 실제 이미지 */
 .sub-event-image-wrap img {
   width: 100%;
   height: 100%;
 
   object-fit: cover;
-  object-position: center;
 
-  transform-origin: center;
+  /* JS 슬라이더가 덮어씀 */
+  object-position: center;
 
   display: block;
 }
@@ -792,11 +779,9 @@ body {
   inset: 0;
 
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       var(--event-color, #1f2937),
-      #111827
-    );
+      #111827);
 }
 
 /* =========================
@@ -817,7 +802,7 @@ body {
 }
 
 /* 본문 안의 실제 콘텐츠는 배경보다 위에 표시 */
-.sub-event-body > * {
+.sub-event-body>* {
   position: relative;
   z-index: 2;
 }
@@ -825,7 +810,6 @@ body {
 /* =========================
    본문 배경만 이미지 위로 겹치기
    글씨는 움직이지 않음
-   이미지와 대표색 경계를 짧고 강하게 블렌딩
 ========================= */
 
 .sub-event-body::before {
@@ -836,21 +820,21 @@ body {
   top: 0;
   bottom: 0;
 
-  /* 배경만 이미지 쪽으로 살짝 겹침 */
+  /* 배경만 이미지 쪽으로 20% 정도 겹침 */
   left: -5%;
   right: 0;
 
+
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       rgba(0, 0, 0, 0) 0%,
       var(--event-color, #1f2937) 3%,
-      var(--event-color, #1f2937) 100%
-    );
+      var(--event-color, #1f2937) 100%);
 
   z-index: 1;
   pointer-events: none;
 }
+
 
 .sub-event-top {
   display: flex;
@@ -894,16 +878,14 @@ body {
 }
 
 .edit-sub-btn {
-  background: #111827;
-}
-
-.edit-sub-btn:hover {
-  background: #1b2433;
+  background: #4f46e5;
 }
 
 .delete-sub-btn {
   background: #dc2626;
 }
+
+
 
 /* =========================
    모바일 상세 팝업 / 하위 이벤트
@@ -1041,48 +1023,6 @@ body {
 }
 
 /* =========================
-   하위 이벤트 수정 아이콘 버튼
-   메인 이벤트 펜 버튼과 동일한 느낌
-========================= */
-
-.edit-sub-icon {
-  position: absolute;
-
-  right: 10px;
-  bottom: 10px;
-
-  width: 34px;
-  height: 34px;
-
-  border: none;
-  border-radius: 10px;
-
-  background: #4f46e5;
-  color: white;
-
-  font-size: 15px;
-
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 5;
-
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.35);
-
-  transition: 0.2s;
-}
-
-.edit-sub-icon:hover {
-  background: #6366f1;
-  transform: scale(1.08);
-}
-
-
-/* =========================
    상세 팝업 구조 복구
    수정 버튼은 상세창 오른쪽 위에 고정
 ========================= */
@@ -1092,15 +1032,21 @@ body {
 }
 
 .edit-main-icon {
+  position: absolute;
+
+  top: 18px;
+  right: 18px;
+
+  width: 36px;
+  height: 36px;
+
   border: none;
-  border-radius: 5px;
+  border-radius: 10px;
 
-  padding: 4px 6px;
-
-  background: #111827;
+  background: #4f46e5;
   color: white;
 
-  font-size: 8px;
+  font-size: 17px;
 
   cursor: pointer;
 
@@ -1108,29 +1054,20 @@ body {
   align-items: center;
   justify-content: center;
 
-  flex-shrink: 0;
+  z-index: 10;
 
   transition: 0.2s;
 }
 
 .edit-main-icon:hover {
-  background: #1b2433;
+  background: #6366f1;
   transform: scale(1.08);
 }
 
 /* 기존에 잘못 들어간 헤더 래퍼 스타일 무력화 */
-.detail-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-
-  gap: 12px;
-
-  margin-bottom: 10px;
-}
-
+.detail-header-row,
 .detail-title-wrap {
-  flex: 1;
+  display: contents;
 }
 
 /* 상세창/하위 이벤트 안의 카테고리 뱃지는 일반 흐름으로 표시 */
@@ -1166,110 +1103,29 @@ body {
    (#eventModal 전용)
 ========================= */
 
+/* 메인 이벤트 편집창만 배경 어둡게 제거 */
 #eventModal {
   background: transparent;
   align-items: flex-start;
   justify-content: flex-end;
+
   padding: 20px;
+
   z-index: 9999;
 }
 
+/* 실제 패널 */
 #eventModal .modal-content {
   width: 420px;
   max-width: 420px;
+
   max-height: calc(100vh - 40px);
+
   overflow-y: auto;
+
   border-radius: 16px;
+
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.35);
-}
 
-/* =========================
-   하위 이벤트 편집 플로팅 패널
-   (#subEventModal 전용)
-   상세창은 유지하고 오른쪽에서만 편집
-========================= */
-
-#subEventModal {
-  background: transparent;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: 20px;
-  z-index: 100000;
-}
-
-#subEventModal .modal-content {
-  width: 420px;
-  max-width: 420px;
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-  border-radius: 16px;
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.35);
-}
-
-
-/* =========================
-   수정 펜 버튼 색상 통일
-========================= */
-
-.edit-main-icon,
-.edit-sub-btn,
-.edit-sub-icon,
-.sub-edit-btn {
-  background: #202c44 !important;
-  color: white !important;
-}
-
-.edit-main-icon:hover,
-.edit-sub-btn:hover,
-.edit-sub-icon:hover,
-.sub-edit-btn:hover {
-  background: #1b2433 !important;
-}
-
-
-
-/* =========================
-   상세 큰 이미지 안쪽 수정 버튼
-========================= */
-
-/* 상세 이미지와 수정 버튼을 같이 감싸는 영역 */
-.detail-image-wrap {
-  position: relative;
-}
-
-/* 상세 이미지 안쪽 우상단 수정 버튼 */
-.edit-main-icon {
-  position: absolute;
-
-  top: 12px;
-  right: 12px;
-
-  border: none;
-  border-radius: 8px;
-
-  padding: 8px 10px;
-
-  background: #111827;
-  color: white;
-
-  font-size: 14px;
-
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  transition: 0.2s;
-
-  z-index: 20;
-}
-
-.edit-main-icon:hover {
-  background: #1b2433;
-  transform: scale(1.08);
 }
