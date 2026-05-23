@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+
+  <title>게임 이벤트 캘린더</title>
+
+  <!-- FullCalendar 기본 CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- 내가 만든 CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- 전체 화면 wrapper -->
+  <div class="wrapper">
+
+    <!-- 상단 제목 + 일정 추가 버튼 -->
+    <div class="top-bar">
+      <h1>게임 이벤트 스케줄</h1>
+
+      <button id="addEventBtn">
+        + 일정 추가
+      </button>
+    </div>
+
+    <!-- JSON 백업 / 불러오기 버튼 -->
+    <div class="toolbar-buttons">
+
+      <button id="exportBtn">
+        JSON 내보내기
+      </button>
+
+      <label class="import-label">
+        JSON 불러오기
+
+        <input
+          type="file"
+          id="importInput"
+          hidden
+        />
+      </label>
+
+    </div>
+
+    <!-- 캘린더가 들어갈 영역 -->
+    <div id="calendar"></div>
+
+  </div>
+
+  <!-- 이벤트 편집창 -->
+  <div id="modal" class="modal hidden">
+
+    <div class="modal-content">
+
+      <h2>이벤트 편집</h2>
+
+      <label>제목</label>
+      <input type="text" id="eventTitle" />
+
+      <label>시작일</label>
+      <input type="date" id="eventStart" />
+
+      <label>종료일</label>
+      <input type="date" id="eventEnd" />
+
+      <label>이미지 업로드</label>
+      <input type="file" id="eventImage" />
+
+      <!-- 이미지 미리보기 -->
+      <img id="previewImage" />
+
+      <div class="buttons">
+
+        <button id="saveBtn">
+          저장
+        </button>
+
+        <button id="deleteBtn">
+          삭제
+        </button>
+
+        <button id="closeBtn">
+          닫기
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 저장 완료 알림 -->
+  <div id="toast">
+    저장 완료
+  </div>
+
+  <!-- FullCalendar 기본 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+  <!-- 내가 만든 JS -->
+  <script src="script.js"></script>
+
+</body>
+</html>
