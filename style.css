@@ -334,16 +334,30 @@ body {
 }
 
 /* =========================
+   요일 헤더 글씨색 수정
+========================= */
+
+.fc-col-header-cell {
+  background: #2b2b2b;   /* 헤더 배경 */
+}
+
+.fc-col-header-cell-cushion {
+  color: white !important;   /* 기본 요일 글씨 */
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* =========================
    주말 날짜 칸 배경색
 ========================= */
 
 /* 일요일 날짜 칸 */
-.fc .fc-day-sun {
+.fc .fc-daygrid-day.fc-day-sun {
   background: rgba(255, 80, 80, 0.08) !important;
 }
 
 /* 토요일 날짜 칸 */
-.fc .fc-day-sat {
+.fc .fc-daygrid-day.fc-day-sat {
   background: rgba(255, 120, 120, 0.06) !important;
 }
 
@@ -351,7 +365,6 @@ body {
 
 /* =========================
    주말 요일 헤더 배경색
-   날짜칸보다 더 진한 색
 ========================= */
 
 /* 일요일 헤더 */
@@ -367,43 +380,26 @@ body {
 
 
 /* =========================
-   요일 글씨 색
+   주말 글씨 색
 ========================= */
 
-/* 평일 */
-.fc .fc-col-header-cell a {
-  color: white !important;
-  font-weight: bold;
-  text-decoration: none !important;
-}
-
-/* 일요일 */
+/* 일요일 요일 */
 .fc .fc-col-header-cell.fc-day-sun a {
   color: #ff8a8a !important;
 }
 
-/* 토요일 */
+/* 토요일 요일 */
 .fc .fc-col-header-cell.fc-day-sat a {
   color: #ffb3b3 !important;
 }
 
-
-
-/* =========================
-   날짜 숫자 색
-========================= */
-
-/* 평일 날짜 숫자 */
-.fc .fc-daygrid-day-number {
-  color: white !important;
-}
-
 /* 일요일 날짜 숫자 */
-.fc .fc-day-sun .fc-daygrid-day-number {
+.fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
   color: #ff8a8a !important;
 }
 
 /* 토요일 날짜 숫자 */
-.fc .fc-day-sat .fc-daygrid-day-number {
+.fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
   color: #ffb3b3 !important;
 }
+
