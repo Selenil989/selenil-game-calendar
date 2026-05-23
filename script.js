@@ -2,11 +2,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // =========================
   // Supabase 연결 정보
-  // SUPABASE_KEY만 네 Publishable key로 교체
   // =========================
 
   const SUPABASE_URL =
-    "https://fqbpjvycdbicbbshxkyb.supabase.co";
+    "https://fqbpjyvcdbicbbshxkyb.supabase.co";
 
   const SUPABASE_KEY =
     "sb_publishable_bXR-gFa8AVTBWAn3nOT4HQ_N_bq7kSI";
@@ -89,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 현재 로그인 / 편집 상태
+  // 현재 상태
   // =========================
 
   let currentUser = null;
@@ -124,8 +123,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 관리자 화면 적용
-  // 로그인한 이메일이 ADMIN_EMAIL일 때만 수정 가능
+  // 관리자 UI 적용
   // =========================
 
   function applyAuthUI() {
@@ -173,7 +171,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // Supabase 로그인 상태 확인
+  // 로그인 상태 확인
   // =========================
 
   async function checkLoginStatus() {
@@ -191,7 +189,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // Supabase에서 일정 불러오기
+  // 일정 불러오기
   // =========================
 
   async function loadEventsFromSupabase() {
@@ -235,7 +233,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // Supabase에 일정 추가
+  // 일정 추가
   // =========================
 
   async function insertEventToSupabase(eventData) {
@@ -276,7 +274,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // Supabase 일정 수정
+  // 일정 수정
   // =========================
 
   async function updateEventInSupabase(eventData) {
@@ -316,7 +314,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // Supabase 일정 삭제
+  // 일정 삭제
   // =========================
 
   async function deleteEventFromSupabase(eventId) {
@@ -345,7 +343,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // =========================
   // 이미지 업로드
-  // Supabase Storage event-images bucket에 저장
   // =========================
 
   async function uploadImageToSupabase(file) {
@@ -489,28 +486,17 @@ document.addEventListener("DOMContentLoaded", async function () {
   const calendar =
     new FullCalendar.Calendar(calendarEl, {
 
-      // 월간 보기
       initialView:
         "dayGridMonth",
 
-      // 로그인 전에는 드래그 불가
       editable:
         false,
 
-      // 자동 높이
       height:
         "auto",
 
-      // 일정 많으면 +more 처리
       dayMaxEvents:
         true,
-
-
-
-      // =========================
-      // 빈 날짜 더블클릭 일정 생성
-      // 관리자만 가능
-      // =========================
 
       dateClick: function(info) {
 
@@ -534,13 +520,6 @@ document.addEventListener("DOMContentLoaded", async function () {
           now;
 
       },
-
-
-
-      // =========================
-      // 드래그 이동 저장
-      // 관리자만 가능
-      // =========================
 
       eventDrop: async function(info) {
 
@@ -590,20 +569,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       },
 
-
-
-      // =========================
-      // Supabase에서 불러온 일정 표시
-      // =========================
-
       events:
         loadedEvents,
-
-
-
-      // =========================
-      // 이벤트 배너 UI
-      // =========================
 
       eventContent: function(info) {
 
@@ -636,13 +603,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         };
 
       },
-
-
-
-      // =========================
-      // 일정 더블클릭 편집
-      // 관리자만 가능
-      // =========================
 
       eventDidMount: function(info) {
 
@@ -689,7 +649,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     "click",
     () => {
 
-      loginEmail.value = "";
+      loginEmail.value =
+        "";
 
       loginPassword.value =
         "";
@@ -703,13 +664,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 
-// =========================
-// 로그인 실행
-// =========================
+  // =========================
+  // 로그인 실행 함수
+  // 버튼 클릭 / 엔터키 공용
+  // =========================
 
-submitLoginBtn.addEventListener(
-  "click",
-  async () => {
+  async function handleLogin() {
 
     const email =
       loginEmail.value.trim();
@@ -741,6 +701,9 @@ submitLoginBtn.addEventListener(
 
     applyAuthUI();
 
+    loginPassword.value =
+      "";
+
     loginModal.classList.add(
       "hidden"
     );
@@ -748,52 +711,50 @@ submitLoginBtn.addEventListener(
     showToast("로그인 완료");
 
   }
-);
 
 
 
-// =========================
-// 로그인창 엔터키 로그인
-// 이메일 / 비밀번호 둘 다 가능
-// =========================
+  // =========================
+  // 로그인 버튼 클릭
+  // =========================
 
-[loginEmail, loginPassword].forEach(input => {
+  submitLoginBtn.addEventListener(
+    "click",
+    handleLogin
+  );
 
-  input.addEventListener(
+
+
+  // =========================
+  // 로그인창 엔터키 로그인
+  // =========================
+
+  loginEmail.addEventListener(
     "keydown",
     (e) => {
 
       if (e.key === "Enter") {
 
-        submitLoginBtn.click();
+        e.preventDefault();
+
+        handleLogin();
 
       }
 
     }
   );
 
-});
+  loginPassword.addEventListener(
+    "keydown",
+    (e) => {
 
-      if (error) {
+      if (e.key === "Enter") {
 
-        console.error(error);
+        e.preventDefault();
 
-        alert("로그인 실패");
-
-        return;
+        handleLogin();
 
       }
-
-      currentUser =
-        data.user;
-
-      applyAuthUI();
-
-      loginModal.classList.add(
-        "hidden"
-      );
-
-      showToast("로그인 완료");
 
     }
   );
@@ -859,7 +820,6 @@ submitLoginBtn.addEventListener(
 
   // =========================
   // 이미지 미리보기
-  // 저장 전 화면에만 미리 표시
   // =========================
 
   imageInput.addEventListener(
@@ -889,7 +849,6 @@ submitLoginBtn.addEventListener(
 
   // =========================
   // 일정 저장
-  // 추가 또는 수정
   // =========================
 
   saveBtn.addEventListener(
@@ -918,7 +877,6 @@ submitLoginBtn.addEventListener(
 
       }
 
-      // 새 이미지가 선택되었으면 업로드
       if (file) {
 
         const imageUrl =
@@ -933,7 +891,6 @@ submitLoginBtn.addEventListener(
 
       }
 
-      // 기존 일정 수정
       if (currentEvent) {
 
         const eventData = {
@@ -981,10 +938,7 @@ submitLoginBtn.addEventListener(
 
         showToast("수정 완료");
 
-      }
-
-      // 새 일정 추가
-      else {
+      } else {
 
         const eventData = {
 
