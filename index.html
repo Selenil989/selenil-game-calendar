@@ -22,7 +22,7 @@
   <div class="wrapper">
 
     <!-- 상단 영역 -->
-    <div class="top-bar">
+    <div class="top-bar">a
       <h1>게임 이벤트 스케줄</h1>
 
       <!-- 로그인 / 로그아웃 / 일정 추가 버튼 -->
@@ -47,11 +47,8 @@
     <div id="loginStatus" class="login-status">
       방문자 모드
     </div>
-    
-    <!-- =========================
-     일정 검색 영역
-      ========================= -->
 
+    <!-- 일정 검색 영역 -->
     <div class="search-box">
 
       <input type="text" id="searchInput" placeholder="일정 검색..." />
@@ -61,7 +58,6 @@
       </button>
 
     </div>
-
 
     <!-- 캘린더 영역 -->
     <div id="calendar"></div>
@@ -101,7 +97,7 @@
 
 
 
-  <!-- 이벤트 편집창 -->
+  <!-- 메인 이벤트 편집창 -->
   <div id="eventModal" class="modal hidden">
 
     <div class="modal-content">
@@ -112,6 +108,14 @@
       <label>제목</label>
       <input type="text" id="eventTitle" />
 
+      <!-- 카테고리 -->
+      <label>카테고리</label>
+      <select id="eventCategory">
+        <option value="업데이트">업데이트</option>
+        <option value="픽업">픽업</option>
+        <option value="복각">복각</option>
+      </select>
+
       <!-- 시작일 -->
       <label>시작일</label>
       <input type="date" id="eventStart" />
@@ -119,6 +123,10 @@
       <!-- 종료일 -->
       <label>종료일</label>
       <input type="date" id="eventEnd" />
+
+      <!-- 설명 -->
+      <label>설명</label>
+      <textarea id="eventDescription" placeholder="이벤트 설명 입력"></textarea>
 
       <!-- 이미지 업로드 -->
       <label>이미지 업로드</label>
@@ -138,6 +146,99 @@
         </button>
 
         <button id="closeEventBtn">
+          닫기
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- 이벤트 상세창 -->
+  <div id="detailModal" class="modal hidden">
+
+    <div class="modal-content detail-content">
+
+      <img id="detailImage" class="detail-image" />
+
+      <div class="detail-header">
+        <span id="detailCategory" class="category-badge">업데이트</span>
+        <h2 id="detailTitle">이벤트명</h2>
+      </div>
+
+      <div id="detailPeriod" class="detail-period"></div>
+
+      <p id="detailDescription" class="detail-description"></p>
+
+      <div class="detail-section-title">
+        하위 이벤트
+      </div>
+
+      <div id="subEventList" class="sub-event-list"></div>
+
+      <div class="buttons detail-buttons">
+
+        <button id="addSubEventBtn" class="hidden">
+          + 하위 이벤트 추가
+        </button>
+
+        <button id="closeDetailBtn">
+          닫기
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- 하위 이벤트 편집창 -->
+  <div id="subEventModal" class="modal hidden">
+
+    <div class="modal-content">
+
+      <h2>하위 이벤트 편집</h2>
+
+      <label>제목</label>
+      <input type="text" id="subEventTitle" />
+
+      <label>카테고리</label>
+      <select id="subEventCategory">
+        <option value="업데이트">업데이트</option>
+        <option value="픽업">픽업</option>
+        <option value="복각">복각</option>
+      </select>
+
+      <label>시작일</label>
+      <input type="date" id="subEventStart" />
+
+      <label>종료일</label>
+      <input type="date" id="subEventEnd" />
+
+      <label>설명</label>
+      <textarea id="subEventDescription" placeholder="하위 이벤트 설명 입력"></textarea>
+
+      <label>이미지 업로드</label>
+      <input type="file" id="subEventImage" />
+
+      <img id="subPreviewImage" />
+
+      <div class="buttons">
+
+        <button id="saveSubEventBtn">
+          저장
+        </button>
+
+        <button id="deleteSubEventBtn">
+          삭제
+        </button>
+
+        <button id="closeSubEventBtn">
           닫기
         </button>
 

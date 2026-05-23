@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   const ADMIN_EMAIL =
     "dbdjvmfos@gmail.com";
 
+  const CATEGORY_DEFAULT =
+    "업데이트";
+
   const supabaseClient =
     supabase.createClient(
       SUPABASE_URL,
@@ -22,74 +25,184 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 공통 함수
+  // =========================
+
+  function getEl(id) {
+    return document.getElementById(id);
+  }
+
+  function safeValue(el, defaultValue = "") {
+    return el ? el.value : defaultValue;
+  }
+
+  function setValue(el, value) {
+    if (el) {
+      el.value = value || "";
+    }
+  }
+
+  function show(el) {
+    if (el) {
+      el.classList.remove("hidden");
+    }
+  }
+
+  function hide(el) {
+    if (el) {
+      el.classList.add("hidden");
+    }
+  }
+
+
+
+  // =========================
   // HTML 요소 가져오기
   // =========================
 
   const calendarEl =
-    document.getElementById("calendar");
+    getEl("calendar");
 
   const loginBtn =
-    document.getElementById("loginBtn");
+    getEl("loginBtn");
 
   const logoutBtn =
-    document.getElementById("logoutBtn");
+    getEl("logoutBtn");
 
   const addEventBtn =
-    document.getElementById("addEventBtn");
+    getEl("addEventBtn");
 
   const loginStatus =
-    document.getElementById("loginStatus");
+    getEl("loginStatus");
 
   const loginModal =
-    document.getElementById("loginModal");
+    getEl("loginModal");
 
   const eventModal =
-    document.getElementById("eventModal");
+    getEl("eventModal");
 
   const loginEmail =
-    document.getElementById("loginEmail");
+    getEl("loginEmail");
 
   const loginPassword =
-    document.getElementById("loginPassword");
+    getEl("loginPassword");
 
   const submitLoginBtn =
-    document.getElementById("submitLoginBtn");
+    getEl("submitLoginBtn");
 
   const closeLoginBtn =
-    document.getElementById("closeLoginBtn");
+    getEl("closeLoginBtn");
 
   const titleInput =
-    document.getElementById("eventTitle");
+    getEl("eventTitle");
 
   const startInput =
-    document.getElementById("eventStart");
+    getEl("eventStart");
 
   const endInput =
-    document.getElementById("eventEnd");
+    getEl("eventEnd");
+
+  const categoryInput =
+    getEl("eventCategory");
+
+  const descriptionInput =
+    getEl("eventDescription");
 
   const imageInput =
-    document.getElementById("eventImage");
+    getEl("eventImage");
 
   const previewImage =
-    document.getElementById("previewImage");
+    getEl("previewImage");
 
   const saveBtn =
-    document.getElementById("saveBtn");
+    getEl("saveBtn");
 
   const deleteBtn =
-    document.getElementById("deleteBtn");
+    getEl("deleteBtn");
 
   const closeEventBtn =
-    document.getElementById("closeEventBtn");
+    getEl("closeEventBtn");
 
   const toast =
-    document.getElementById("toast");
+    getEl("toast");
 
   const searchInput =
-    document.getElementById("searchInput");
+    getEl("searchInput");
 
   const clearSearchBtn =
-    document.getElementById("clearSearchBtn");
+    getEl("clearSearchBtn");
+
+
+
+  // =========================
+  // 상세 보기 모달 요소
+  // =========================
+
+  const detailModal =
+    getEl("detailModal");
+
+  const detailImage =
+    getEl("detailImage");
+
+  const detailTitle =
+    getEl("detailTitle");
+
+  const detailCategory =
+    getEl("detailCategory");
+
+  const detailPeriod =
+    getEl("detailPeriod");
+
+  const detailDescription =
+    getEl("detailDescription");
+
+  const subEventList =
+    getEl("subEventList");
+
+  const addSubEventBtn =
+    getEl("addSubEventBtn");
+
+  const closeDetailBtn =
+    getEl("closeDetailBtn");
+
+
+
+  // =========================
+  // 하위 이벤트 편집 모달 요소
+  // =========================
+
+  const subEventModal =
+    getEl("subEventModal");
+
+  const subTitleInput =
+    getEl("subEventTitle");
+
+  const subStartInput =
+    getEl("subEventStart");
+
+  const subEndInput =
+    getEl("subEventEnd");
+
+  const subCategoryInput =
+    getEl("subEventCategory");
+
+  const subDescriptionInput =
+    getEl("subEventDescription");
+
+  const subImageInput =
+    getEl("subEventImage");
+
+  const subPreviewImage =
+    getEl("subPreviewImage");
+
+  const saveSubEventBtn =
+    getEl("saveSubEventBtn");
+
+  const deleteSubEventBtn =
+    getEl("deleteSubEventBtn");
+
+  const closeSubEventBtn =
+    getEl("closeSubEventBtn");
 
 
 
@@ -103,13 +216,23 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let currentEvent = null;
 
+  let currentDetailEvent = null;
+
+  let currentSubEvent = null;
+
   let uploadedImage = "";
 
   let uploadedColor = "#1f2937";
 
+  let uploadedSubImage = "";
+
+  let uploadedSubColor = "#1f2937";
+
   let calendar = null;
 
   let allEvents = [];
+
+  let currentSubEvents = [];
 
 
 
@@ -118,6 +241,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================
 
   function showToast(message) {
+
+    if (!toast) return;
 
     toast.textContent =
       message || "저장 완료";
@@ -135,6 +260,30 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 날짜 표시
+  // =========================
+
+  function formatDate(dateText) {
+
+    if (!dateText) return "";
+
+    return dateText.replaceAll("-", ".");
+
+  }
+
+  function formatPeriod(start, end) {
+
+    if (!end) {
+      return formatDate(start);
+    }
+
+    return `${formatDate(start)} ~ ${formatDate(end)}`;
+
+  }
+
+
+
+  // =========================
   // 관리자 UI 적용
   // =========================
 
@@ -145,27 +294,30 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (isAdmin) {
 
-      loginBtn.classList.add("hidden");
+      loginBtn?.classList.add("hidden");
+      logoutBtn?.classList.remove("hidden");
+      addEventBtn?.classList.remove("hidden");
 
-      logoutBtn.classList.remove("hidden");
+      if (loginStatus) {
+        loginStatus.textContent =
+          "관리자 모드";
+      }
 
-      addEventBtn.classList.remove("hidden");
-
-      loginStatus.textContent =
-        "관리자 모드";
+      addSubEventBtn?.classList.remove("hidden");
 
     } else {
 
-      loginBtn.classList.remove("hidden");
+      loginBtn?.classList.remove("hidden");
+      logoutBtn?.classList.add("hidden");
+      addEventBtn?.classList.add("hidden");
 
-      logoutBtn.classList.add("hidden");
+      if (loginStatus) {
+        loginStatus.textContent =
+          "방문자 모드";
+      }
 
-      addEventBtn.classList.add("hidden");
-
-      loginStatus.textContent =
-        "방문자 모드";
-
-      eventModal.classList.add("hidden");
+      hide(eventModal);
+      addSubEventBtn?.classList.add("hidden");
 
     }
 
@@ -201,7 +353,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 일정 불러오기
+  // 메인 이벤트 불러오기
   // =========================
 
   async function loadEventsFromSupabase() {
@@ -237,6 +389,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       extendedProps: {
         image: item.image_url || "",
         color: item.color || "#1f2937",
+        category: item.category || CATEGORY_DEFAULT,
+        description: item.description || "",
       },
 
     }));
@@ -246,7 +400,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 일정 추가
+  // 메인 이벤트 추가
   // =========================
 
   async function insertEventToSupabase(eventData) {
@@ -271,6 +425,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           color:
             eventData.extendedProps.color || "#1f2937",
 
+          category:
+            eventData.extendedProps.category || CATEGORY_DEFAULT,
+
+          description:
+            eventData.extendedProps.description || "",
+
         });
 
     if (error) {
@@ -290,7 +450,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 일정 수정
+  // 메인 이벤트 수정
   // =========================
 
   async function updateEventInSupabase(eventData) {
@@ -313,6 +473,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           color:
             eventData.extendedProps.color || "#1f2937",
 
+          category:
+            eventData.extendedProps.category || CATEGORY_DEFAULT,
+
+          description:
+            eventData.extendedProps.description || "",
+
         })
         .eq("id", eventData.id);
 
@@ -333,7 +499,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 일정 삭제
+  // 메인 이벤트 삭제
   // =========================
 
   async function deleteEventFromSupabase(eventId) {
@@ -361,6 +527,140 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 하위 이벤트 불러오기
+  // =========================
+
+  async function loadSubEvents(eventId) {
+
+    const { data, error } =
+      await supabaseClient
+        .from("sub_events")
+        .select("*")
+        .eq("event_id", eventId)
+        .order("start_date", {
+          ascending: true
+        });
+
+    if (error) {
+
+      console.error(error);
+
+      alert("하위 이벤트를 불러오지 못했습니다.");
+
+      return [];
+
+    }
+
+    return data || [];
+
+  }
+
+
+
+  // =========================
+  // 하위 이벤트 추가
+  // =========================
+
+  async function insertSubEventToSupabase(subData) {
+
+    const { error } =
+      await supabaseClient
+        .from("sub_events")
+        .insert(subData);
+
+    if (error) {
+
+      console.error(error);
+
+      alert("하위 이벤트 추가 실패");
+
+      return false;
+
+    }
+
+    return true;
+
+  }
+
+
+
+  // =========================
+  // 하위 이벤트 수정
+  // =========================
+
+  async function updateSubEventInSupabase(subData) {
+
+    const { error } =
+      await supabaseClient
+        .from("sub_events")
+        .update({
+
+          title: subData.title,
+
+          start_date: subData.start_date || null,
+
+          end_date: subData.end_date || null,
+
+          category:
+            subData.category || CATEGORY_DEFAULT,
+
+          description:
+            subData.description || "",
+
+          image_url:
+            subData.image_url || "",
+
+          color:
+            subData.color || "#1f2937",
+
+        })
+        .eq("id", subData.id);
+
+    if (error) {
+
+      console.error(error);
+
+      alert("하위 이벤트 수정 실패");
+
+      return false;
+
+    }
+
+    return true;
+
+  }
+
+
+
+  // =========================
+  // 하위 이벤트 삭제
+  // =========================
+
+  async function deleteSubEventFromSupabase(subEventId) {
+
+    const { error } =
+      await supabaseClient
+        .from("sub_events")
+        .delete()
+        .eq("id", subEventId);
+
+    if (error) {
+
+      console.error(error);
+
+      alert("하위 이벤트 삭제 실패");
+
+      return false;
+
+    }
+
+    return true;
+
+  }
+
+
+
+  // =========================
   // 이미지 업로드
   // =========================
 
@@ -368,7 +668,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!file) {
 
-      return uploadedImage;
+      return "";
 
     }
 
@@ -506,7 +806,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 기존 일정 편집창 열기
+  // 기존 메인 이벤트 편집창 열기
   // =========================
 
   function openModalForEvent(event) {
@@ -514,14 +814,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     currentEvent =
       event;
 
-    titleInput.value =
-      event.title;
+    setValue(titleInput, event.title);
 
-    startInput.value =
-      event.startStr;
+    setValue(startInput, event.startStr);
 
-    endInput.value =
-      event.endStr || "";
+    setValue(endInput, event.endStr || "");
+
+    setValue(
+      categoryInput,
+      event.extendedProps.category || CATEGORY_DEFAULT
+    );
+
+    setValue(
+      descriptionInput,
+      event.extendedProps.description || ""
+    );
 
     uploadedImage =
       event.extendedProps.image || "";
@@ -529,10 +836,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedColor =
       event.extendedProps.color || "#1f2937";
 
-    imageInput.value =
-      "";
+    if (imageInput) {
+      imageInput.value = "";
+    }
 
-    if (uploadedImage) {
+    if (uploadedImage && previewImage) {
 
       previewImage.src =
         uploadedImage;
@@ -540,21 +848,21 @@ document.addEventListener("DOMContentLoaded", async function () {
       previewImage.style.display =
         "block";
 
-    } else {
+    } else if (previewImage) {
 
       previewImage.style.display =
         "none";
 
     }
 
-    eventModal.classList.remove("hidden");
+    show(eventModal);
 
   }
 
 
 
   // =========================
-  // 새 일정 편집창 열기
+  // 새 메인 이벤트 편집창 열기
   // =========================
 
   function openModalForNewEvent(startDate = "") {
@@ -562,14 +870,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     currentEvent =
       null;
 
-    titleInput.value =
-      "";
+    setValue(titleInput, "");
 
-    startInput.value =
-      startDate;
+    setValue(startInput, startDate);
 
-    endInput.value =
-      "";
+    setValue(endInput, "");
+
+    setValue(categoryInput, CATEGORY_DEFAULT);
+
+    setValue(descriptionInput, "");
 
     uploadedImage =
       "";
@@ -577,29 +886,32 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedColor =
       "#1f2937";
 
-    imageInput.value =
-      "";
+    if (imageInput) {
+      imageInput.value = "";
+    }
 
-    previewImage.style.display =
-      "none";
+    if (previewImage) {
+      previewImage.style.display =
+        "none";
+    }
 
-    eventModal.classList.remove("hidden");
+    show(eventModal);
 
   }
 
 
 
   // =========================
-  // 로그인 실행 함수
+  // 로그인 실행
   // =========================
 
   async function handleLogin() {
 
     const email =
-      loginEmail.value.trim();
+      safeValue(loginEmail).trim();
 
     const password =
-      loginPassword.value;
+      safeValue(loginPassword);
 
     const { data, error } =
       await supabaseClient.auth
@@ -625,12 +937,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     applyAuthUI();
 
-    loginPassword.value =
-      "";
+    setValue(loginPassword, "");
 
-    loginModal.classList.add(
-      "hidden"
-    );
+    hide(loginModal);
 
     showToast("로그인 완료");
 
@@ -639,7 +948,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 검색 적용 함수
+  // 검색 적용
   // =========================
 
   function applySearchFilter() {
@@ -647,7 +956,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!calendar) return;
 
     const keyword =
-      searchInput.value.trim().toLowerCase();
+      safeValue(searchInput).trim().toLowerCase();
 
     const filteredEvents =
       allEvents.filter(event => {
@@ -671,7 +980,259 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 일정 먼저 불러오기
+  // 카테고리 뱃지 HTML
+  // =========================
+
+  function getCategoryBadge(category) {
+
+    const safeCategory =
+      category || CATEGORY_DEFAULT;
+
+    return `
+      <span class="category-badge category-${safeCategory}">
+        ${safeCategory}
+      </span>
+    `;
+
+  }
+
+
+
+  // =========================
+  // 하위 이벤트 목록 렌더링
+  // =========================
+
+  function renderSubEvents() {
+
+    if (!subEventList) return;
+
+    subEventList.innerHTML = "";
+
+    if (currentSubEvents.length === 0) {
+
+      subEventList.innerHTML =
+        `<div class="empty-sub-events">등록된 하위 이벤트가 없습니다.</div>`;
+
+      return;
+
+    }
+
+    currentSubEvents.forEach(subEvent => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "sub-event-card";
+
+      card.style.setProperty(
+        "--event-color",
+        subEvent.color || "#1f2937"
+      );
+
+      const imageHtml =
+        subEvent.image_url
+          ? `
+            <div class="sub-event-image">
+              <img src="${subEvent.image_url}" />
+            </div>
+          `
+          : `<div class="sub-event-image no-sub-image"></div>`;
+
+      card.innerHTML =
+        `
+          ${imageHtml}
+
+          <div class="sub-event-info">
+
+            <div class="sub-event-top">
+              ${getCategoryBadge(subEvent.category)}
+              <span class="sub-event-period">
+                ${formatPeriod(subEvent.start_date, subEvent.end_date)}
+              </span>
+            </div>
+
+            <div class="sub-event-title">
+              ${subEvent.title}
+            </div>
+
+            <div class="sub-event-desc">
+              ${subEvent.description || ""}
+            </div>
+
+          </div>
+        `;
+
+      if (isAdmin) {
+
+        card.addEventListener(
+          "dblclick",
+          () => {
+
+            openSubEventModal(subEvent);
+
+          }
+        );
+
+      }
+
+      subEventList.appendChild(card);
+
+    });
+
+  }
+
+
+
+  // =========================
+  // 메인 이벤트 상세창 열기
+  // =========================
+
+  async function openDetailModal(event) {
+
+    currentDetailEvent =
+      event;
+
+    if (detailImage) {
+
+      if (event.extendedProps.image) {
+
+        detailImage.src =
+          event.extendedProps.image;
+
+        detailImage.style.display =
+          "block";
+
+      } else {
+
+        detailImage.style.display =
+          "none";
+
+      }
+
+    }
+
+    if (detailTitle) {
+      detailTitle.textContent =
+        event.title;
+    }
+
+    if (detailCategory) {
+      detailCategory.innerHTML =
+        getCategoryBadge(
+          event.extendedProps.category
+        );
+    }
+
+    if (detailPeriod) {
+      detailPeriod.textContent =
+        formatPeriod(
+          event.startStr,
+          event.endStr
+        );
+    }
+
+    if (detailDescription) {
+      detailDescription.textContent =
+        event.extendedProps.description || "";
+    }
+
+    if (addSubEventBtn) {
+      if (isAdmin) {
+        addSubEventBtn.classList.remove("hidden");
+      } else {
+        addSubEventBtn.classList.add("hidden");
+      }
+    }
+
+    currentSubEvents =
+      await loadSubEvents(event.id);
+
+    renderSubEvents();
+
+    show(detailModal);
+
+  }
+
+
+
+  // =========================
+  // 하위 이벤트 편집창 열기
+  // =========================
+
+  function openSubEventModal(subEvent = null) {
+
+    currentSubEvent =
+      subEvent;
+
+    setValue(
+      subTitleInput,
+      subEvent?.title || ""
+    );
+
+    setValue(
+      subStartInput,
+      subEvent?.start_date || ""
+    );
+
+    setValue(
+      subEndInput,
+      subEvent?.end_date || ""
+    );
+
+    setValue(
+      subCategoryInput,
+      subEvent?.category || CATEGORY_DEFAULT
+    );
+
+    setValue(
+      subDescriptionInput,
+      subEvent?.description || ""
+    );
+
+    uploadedSubImage =
+      subEvent?.image_url || "";
+
+    uploadedSubColor =
+      subEvent?.color || "#1f2937";
+
+    if (subImageInput) {
+      subImageInput.value = "";
+    }
+
+    if (uploadedSubImage && subPreviewImage) {
+
+      subPreviewImage.src =
+        uploadedSubImage;
+
+      subPreviewImage.style.display =
+        "block";
+
+    } else if (subPreviewImage) {
+
+      subPreviewImage.style.display =
+        "none";
+
+    }
+
+    if (deleteSubEventBtn) {
+
+      if (subEvent) {
+        deleteSubEventBtn.classList.remove("hidden");
+      } else {
+        deleteSubEventBtn.classList.add("hidden");
+      }
+
+    }
+
+    show(subEventModal);
+
+  }
+
+
+
+  // =========================
+  // 메인 이벤트 로드
   // =========================
 
   const loadedEvents =
@@ -774,6 +1335,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             color:
               info.event.extendedProps.color || "#1f2937",
+
+            category:
+              info.event.extendedProps.category || CATEGORY_DEFAULT,
+
+            description:
+              info.event.extendedProps.description || "",
           },
 
         };
@@ -795,9 +1362,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           allEvents.map(event => {
 
             if (event.id === eventData.id) {
-
               return eventData;
-
             }
 
             return event;
@@ -823,7 +1388,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       // =========================
       // 이벤트 배너 UI
-      // 앞쪽 2일 이미지 + 나머지 대표색 그라데이션
       // =========================
 
       eventContent: function(info) {
@@ -833,6 +1397,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const color =
           info.event.extendedProps.color || "#1f2937";
+
+        const category =
+          info.event.extendedProps.category || CATEGORY_DEFAULT;
 
         const imageHtml =
           image
@@ -870,6 +1437,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
               <div class="overlay">
 
+                ${getCategoryBadge(category)}
+
                 <div class="title">
                   ${info.event.title}
                 </div>
@@ -890,11 +1459,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       // =========================
 
       eventDidMount: function(info) {
-
-        // =========================
-        // 배너 조각 길이 계산
-        // 앞쪽 최대 2일만 이미지 표시
-        // =========================
 
         const dayCell =
           document.querySelector(
@@ -928,15 +1492,28 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         }
 
-        // =========================
-        // 이벤트 더블클릭 편집
-        // =========================
-
+        // 클릭 = 상세 보기
         info.el.addEventListener(
-          "dblclick",
+          "click",
           () => {
 
+            openDetailModal(
+              info.event
+            );
+
+          }
+        );
+
+        // 더블클릭 = 관리자 편집
+        info.el.addEventListener(
+          "dblclick",
+          (e) => {
+
+            e.stopPropagation();
+
             if (!isAdmin) return;
+
+            hide(detailModal);
 
             openModalForEvent(
               info.event
@@ -971,7 +1548,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 검색 입력 시 즉시 필터링
   // =========================
 
-  searchInput.addEventListener(
+  searchInput?.addEventListener(
     "input",
     applySearchFilter
   );
@@ -982,12 +1559,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 검색 초기화
   // =========================
 
-  clearSearchBtn.addEventListener(
+  clearSearchBtn?.addEventListener(
     "click",
     () => {
 
-      searchInput.value =
-        "";
+      setValue(searchInput, "");
 
       applySearchFilter();
 
@@ -1000,19 +1576,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 로그인 버튼
   // =========================
 
-  loginBtn.addEventListener(
+  loginBtn?.addEventListener(
     "click",
     () => {
 
-      loginEmail.value =
-        "";
+      setValue(loginEmail, "");
 
-      loginPassword.value =
-        "";
+      setValue(loginPassword, "");
 
-      loginModal.classList.remove(
-        "hidden"
-      );
+      show(loginModal);
 
     }
   );
@@ -1023,7 +1595,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 로그인 버튼 클릭
   // =========================
 
-  submitLoginBtn.addEventListener(
+  submitLoginBtn?.addEventListener(
     "click",
     handleLogin
   );
@@ -1034,7 +1606,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 로그인창 엔터키 로그인
   // =========================
 
-  loginEmail.addEventListener(
+  loginEmail?.addEventListener(
     "keydown",
     (e) => {
 
@@ -1049,7 +1621,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   );
 
-  loginPassword.addEventListener(
+  loginPassword?.addEventListener(
     "keydown",
     (e) => {
 
@@ -1070,7 +1642,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 로그아웃
   // =========================
 
-  logoutBtn.addEventListener(
+  logoutBtn?.addEventListener(
     "click",
     async () => {
 
@@ -1093,13 +1665,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 로그인창 닫기
   // =========================
 
-  closeLoginBtn.addEventListener(
+  closeLoginBtn?.addEventListener(
     "click",
     () => {
 
-      loginModal.classList.add(
-        "hidden"
-      );
+      hide(loginModal);
 
     }
   );
@@ -1110,7 +1680,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 일정 추가 버튼
   // =========================
 
-  addEventBtn.addEventListener(
+  addEventBtn?.addEventListener(
     "click",
     () => {
 
@@ -1124,10 +1694,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 이미지 미리보기 + 대표색 추출
+  // 메인 이미지 미리보기 + 대표색 추출
   // =========================
 
-  imageInput.addEventListener(
+  imageInput?.addEventListener(
     "change",
     async function () {
 
@@ -1141,11 +1711,15 @@ document.addEventListener("DOMContentLoaded", async function () {
       const previewUrl =
         URL.createObjectURL(file);
 
-      previewImage.src =
-        previewUrl;
+      if (previewImage) {
 
-      previewImage.style.display =
-        "block";
+        previewImage.src =
+          previewUrl;
+
+        previewImage.style.display =
+          "block";
+
+      }
 
       uploadedColor =
         await extractAverageColor(file);
@@ -1156,26 +1730,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 일정 저장
+  // 메인 일정 저장
   // =========================
 
-  saveBtn.addEventListener(
+  saveBtn?.addEventListener(
     "click",
     async () => {
 
       if (!isAdmin) return;
 
       const title =
-        titleInput.value.trim();
+        safeValue(titleInput).trim();
 
       const start =
-        startInput.value;
+        safeValue(startInput);
 
       const end =
-        endInput.value;
+        safeValue(endInput);
+
+      const category =
+        safeValue(categoryInput, CATEGORY_DEFAULT) || CATEGORY_DEFAULT;
+
+      const description =
+        safeValue(descriptionInput);
 
       const file =
-        imageInput.files[0];
+        imageInput?.files[0];
 
       if (!title || !start) {
 
@@ -1199,35 +1779,41 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       }
 
+      const eventData = {
+
+        id:
+          currentEvent
+            ? currentEvent.id
+            : Date.now().toString(),
+
+        title,
+
+        start,
+
+        end,
+
+        extendedProps: {
+          image:
+            uploadedImage || "",
+
+          color:
+            uploadedColor || "#1f2937",
+
+          category,
+
+          description,
+        },
+
+      };
+
+      const ok =
+        currentEvent
+          ? await updateEventInSupabase(eventData)
+          : await insertEventToSupabase(eventData);
+
+      if (!ok) return;
+
       if (currentEvent) {
-
-        const eventData = {
-
-          id:
-            currentEvent.id,
-
-          title,
-
-          start,
-
-          end,
-
-          extendedProps: {
-            image:
-              uploadedImage || "",
-
-            color:
-              uploadedColor || "#1f2937",
-          },
-
-        };
-
-        const ok =
-          await updateEventInSupabase(
-            eventData
-          );
-
-        if (!ok) return;
 
         currentEvent.setProp(
           "title",
@@ -1252,64 +1838,40 @@ document.addEventListener("DOMContentLoaded", async function () {
           uploadedColor || "#1f2937"
         );
 
+        currentEvent.setExtendedProp(
+          "category",
+          category
+        );
+
+        currentEvent.setExtendedProp(
+          "description",
+          description
+        );
+
         allEvents =
           allEvents.map(event => {
 
             if (event.id === eventData.id) {
-
               return eventData;
-
             }
 
             return event;
 
           });
 
-        applySearchFilter();
-
         showToast("수정 완료");
 
       } else {
 
-        const eventData = {
-
-          id:
-            Date.now().toString(),
-
-          title,
-
-          start,
-
-          end,
-
-          extendedProps: {
-            image:
-              uploadedImage || "",
-
-            color:
-              uploadedColor || "#1f2937",
-          },
-
-        };
-
-        const ok =
-          await insertEventToSupabase(
-            eventData
-          );
-
-        if (!ok) return;
-
         allEvents.push(eventData);
-
-        applySearchFilter();
 
         showToast("추가 완료");
 
       }
 
-      eventModal.classList.add(
-        "hidden"
-      );
+      applySearchFilter();
+
+      hide(eventModal);
 
     }
   );
@@ -1317,10 +1879,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 일정 삭제
+  // 메인 일정 삭제
   // =========================
 
-  deleteBtn.addEventListener(
+  deleteBtn?.addEventListener(
     "click",
     async () => {
 
@@ -1354,8 +1916,170 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       showToast("삭제 완료");
 
-      eventModal.classList.add(
-        "hidden"
+      hide(eventModal);
+
+    }
+  );
+
+
+
+  // =========================
+  // 하위 이벤트 추가 버튼
+  // =========================
+
+  addSubEventBtn?.addEventListener(
+    "click",
+    () => {
+
+      if (!isAdmin) return;
+
+      if (!currentDetailEvent) return;
+
+      openSubEventModal();
+
+    }
+  );
+
+
+
+  // =========================
+  // 하위 이미지 미리보기 + 대표색 추출
+  // =========================
+
+  subImageInput?.addEventListener(
+    "change",
+    async function () {
+
+      if (!isAdmin) return;
+
+      const file =
+        this.files[0];
+
+      if (!file) return;
+
+      const previewUrl =
+        URL.createObjectURL(file);
+
+      if (subPreviewImage) {
+
+        subPreviewImage.src =
+          previewUrl;
+
+        subPreviewImage.style.display =
+          "block";
+
+      }
+
+      uploadedSubColor =
+        await extractAverageColor(file);
+
+    }
+  );
+
+
+
+  // =========================
+  // 하위 이벤트 저장
+  // =========================
+
+  saveSubEventBtn?.addEventListener(
+    "click",
+    async () => {
+
+      if (!isAdmin) return;
+
+      if (!currentDetailEvent) return;
+
+      const title =
+        safeValue(subTitleInput).trim();
+
+      const startDate =
+        safeValue(subStartInput);
+
+      const endDate =
+        safeValue(subEndInput);
+
+      const category =
+        safeValue(subCategoryInput, CATEGORY_DEFAULT) || CATEGORY_DEFAULT;
+
+      const description =
+        safeValue(subDescriptionInput);
+
+      const file =
+        subImageInput?.files[0];
+
+      if (!title) {
+
+        alert("하위 이벤트 제목을 입력하세요.");
+
+        return;
+
+      }
+
+      if (file) {
+
+        const imageUrl =
+          await uploadImageToSupabase(
+            file
+          );
+
+        if (!imageUrl) return;
+
+        uploadedSubImage =
+          imageUrl;
+
+      }
+
+      const subData = {
+
+        id:
+          currentSubEvent
+            ? currentSubEvent.id
+            : Date.now().toString(),
+
+        event_id:
+          currentDetailEvent.id,
+
+        title,
+
+        start_date:
+          startDate || null,
+
+        end_date:
+          endDate || null,
+
+        category,
+
+        description,
+
+        image_url:
+          uploadedSubImage || "",
+
+        color:
+          uploadedSubColor || "#1f2937",
+
+      };
+
+      const ok =
+        currentSubEvent
+          ? await updateSubEventInSupabase(subData)
+          : await insertSubEventToSupabase(subData);
+
+      if (!ok) return;
+
+      currentSubEvents =
+        await loadSubEvents(
+          currentDetailEvent.id
+        );
+
+      renderSubEvents();
+
+      hide(subEventModal);
+
+      showToast(
+        currentSubEvent
+          ? "하위 이벤트 수정 완료"
+          : "하위 이벤트 추가 완료"
       );
 
     }
@@ -1364,16 +2088,72 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 이벤트 편집창 닫기
+  // 하위 이벤트 삭제
   // =========================
 
-  closeEventBtn.addEventListener(
+  deleteSubEventBtn?.addEventListener(
+    "click",
+    async () => {
+
+      if (!isAdmin) return;
+
+      if (!currentSubEvent) return;
+
+      const okConfirm =
+        confirm("하위 이벤트를 삭제할까요?");
+
+      if (!okConfirm) return;
+
+      const ok =
+        await deleteSubEventFromSupabase(
+          currentSubEvent.id
+        );
+
+      if (!ok) return;
+
+      currentSubEvents =
+        await loadSubEvents(
+          currentDetailEvent.id
+        );
+
+      renderSubEvents();
+
+      hide(subEventModal);
+
+      showToast("하위 이벤트 삭제 완료");
+
+    }
+  );
+
+
+
+  // =========================
+  // 닫기 버튼들
+  // =========================
+
+  closeEventBtn?.addEventListener(
     "click",
     () => {
 
-      eventModal.classList.add(
-        "hidden"
-      );
+      hide(eventModal);
+
+    }
+  );
+
+  closeDetailBtn?.addEventListener(
+    "click",
+    () => {
+
+      hide(detailModal);
+
+    }
+  );
+
+  closeSubEventBtn?.addEventListener(
+    "click",
+    () => {
+
+      hide(subEventModal);
 
     }
   );
@@ -1384,31 +2164,45 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 모달 바깥 클릭 시 닫기
   // =========================
 
-  loginModal.addEventListener(
+  loginModal?.addEventListener(
     "click",
     (e) => {
 
       if (e.target === loginModal) {
-
-        loginModal.classList.add(
-          "hidden"
-        );
-
+        hide(loginModal);
       }
 
     }
   );
 
-  eventModal.addEventListener(
+  eventModal?.addEventListener(
     "click",
     (e) => {
 
       if (e.target === eventModal) {
+        hide(eventModal);
+      }
 
-        eventModal.classList.add(
-          "hidden"
-        );
+    }
+  );
 
+  detailModal?.addEventListener(
+    "click",
+    (e) => {
+
+      if (e.target === detailModal) {
+        hide(detailModal);
+      }
+
+    }
+  );
+
+  subEventModal?.addEventListener(
+    "click",
+    (e) => {
+
+      if (e.target === subEventModal) {
+        hide(subEventModal);
       }
 
     }
@@ -1426,13 +2220,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (e.key === "Escape") {
 
-        loginModal.classList.add(
-          "hidden"
-        );
-
-        eventModal.classList.add(
-          "hidden"
-        );
+        hide(loginModal);
+        hide(eventModal);
+        hide(detailModal);
+        hide(subEventModal);
 
       }
 
