@@ -174,25 +174,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // =========================
   // 로그인 상태 확인
+  // 로그인 안 되어 있어도 에러 안 나게 처리
   // =========================
 
   async function checkLoginStatus() {
 
-    const { data, error } =
-      await supabaseClient.auth.getUser();
+    const { data } =
+      await supabaseClient.auth.getSession();
 
-    if (error) {
-
-      console.error(error);
-
-      currentUser = null;
-
-    } else {
-
-      currentUser =
-        data.user || null;
-
-    }
+    currentUser =
+      data.session?.user || null;
 
     applyAuthUI();
 
