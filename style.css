@@ -395,10 +395,10 @@ body {
 
 /* 일요일 날짜 숫자 */
 .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
-  color: #7a1f1f !important;
+  color: #ff8a8a !important;
 }
 
 /* 토요일 날짜 숫자 */
 .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
-  color: #8a2d2d !important;
+  color: #ffb3b3 !important;
 }
