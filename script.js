@@ -1036,6 +1036,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           ? `
       <div class="sub-event-image-wrap">
         <img src="${subEvent.image_url}" />
+        <div class="sub-event-image-fade"></div>
       </div>
     `
           : `<div class="sub-event-image-wrap no-sub-image"></div>`;
