@@ -332,3 +332,35 @@ body {
 
   transform: translateY(0);
 }
+
+/* =========================
+   요일 헤더 글씨색 수정
+========================= */
+
+.fc-col-header-cell {
+  background: #2b2b2b;   /* 헤더 배경 */
+}
+
+.fc-col-header-cell-cushion {
+  color: white !important;   /* 기본 요일 글씨 */
+  font-weight: bold;
+  text-decoration: none;
+}
+
+
+/* =========================
+   일요일 빨간색
+========================= */
+
+.fc-day-sun .fc-col-header-cell-cushion {
+  color: #ff6b6b !important;
+}
+
+
+/* =========================
+   토요일 빨간계열
+========================= */
+
+.fc-day-sat .fc-col-header-cell-cushion {
+  color: #ff9a9a !important;
+}
