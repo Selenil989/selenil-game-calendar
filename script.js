@@ -114,6 +114,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   const previewImage =
     getEl("previewImage");
 
+  // =========================
+  // 메인 이벤트 이미지 위치 슬라이더
+  // =========================
+
+  const eventImagePosX =
+    getEl("eventImagePosX");
+
+  const eventImagePosY =
+    getEl("eventImagePosY");
+
   const saveBtn =
     getEl("saveBtn");
 
@@ -196,6 +206,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   const subPreviewImage =
     getEl("subPreviewImage");
 
+  // =========================
+  // 하위 이벤트 이미지 위치 슬라이더
+  // =========================
+
+  const subImagePosX =
+    getEl("subImagePosX");
+
+  const subImagePosY =
+    getEl("subImagePosY");
+
   const saveSubEventBtn =
     getEl("saveSubEventBtn");
 
@@ -221,13 +241,48 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let currentSubEvent = null;
 
+  // 신규 생성일 때 기본 중앙
+  if (!subEvent) {
+
+    setValue(subImagePosX, 50);
+    setValue(subImagePosY, 50);
+
+  }
+
   let uploadedImage = "";
 
   let uploadedColor = "#1f2937";
 
+
+  // =========================
+  // 신규 이벤트 기본 이미지 위치
+  // =========================
+
+  uploadedImagePosX = 50;
+  uploadedImagePosY = 50;
+
+  // 슬라이더 초기화
+  setValue(eventImagePosX, 50);
+  setValue(eventImagePosY, 50);
+
+
+  // =========================
+  // 메인 이벤트 이미지 위치
+  // =========================
+
+  let uploadedImagePosX = 50;
+  let uploadedImagePosY = 50;
+
   let uploadedSubImage = "";
 
   let uploadedSubColor = "#1f2937";
+
+  // =========================
+  // 하위 이벤트 이미지 위치
+  // =========================
+
+  let uploadedSubImagePosX = 50;
+  let uploadedSubImagePosY = 50;
 
   let calendar = null;
 
@@ -390,10 +445,14 @@ document.addEventListener("DOMContentLoaded", async function () {
       extendedProps: {
         image: item.image_url || "",
         color: item.color || "#1f2937",
+
+        // 이미지 위치
+        imagePosX: item.image_pos_x ?? 50,
+        imagePosY: item.image_pos_y ?? 50,
+
         category: item.category || CATEGORY_DEFAULT,
         description: item.description || "",
       },
-
     }));
 
   }
@@ -431,6 +490,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           description:
             eventData.extendedProps.description || "",
+
+          // 이미지 위치 저장
+          image_pos_x:
+            eventData.extendedProps.imagePosX ?? 50,
+
+          image_pos_y:
+            eventData.extendedProps.imagePosY ?? 50,
 
         });
 
@@ -479,6 +545,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           description:
             eventData.extendedProps.description || "",
+
+          // 이미지 위치 저장
+          image_pos_x:
+            eventData.extendedProps.imagePosX ?? 50,
+
+          image_pos_y:
+            eventData.extendedProps.imagePosY ?? 50,
 
         })
         .eq("id", eventData.id);
@@ -613,6 +686,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           color:
             subData.color || "#1f2937",
+
+          // 이미지 위치 저장
+          image_pos_x:
+            subData.image_pos_x ?? 50,
+
+          image_pos_y:
+            subData.image_pos_y ?? 50,
 
         })
         .eq("id", subData.id);
@@ -837,6 +917,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedColor =
       event.extendedProps.color || "#1f2937";
 
+    // =========================
+    // 메인 이벤트 기존 이미지 위치 불러오기
+    // =========================
+
+    uploadedImagePosX =
+      event.extendedProps.imagePosX ?? 50;
+
+    uploadedImagePosY =
+      event.extendedProps.imagePosY ?? 50;
+
+    // 슬라이더 UI 반영
+    setValue(
+      eventImagePosX,
+      uploadedImagePosX
+    );
+
+    setValue(
+      eventImagePosY,
+      uploadedImagePosY
+    );
+
     if (imageInput) {
       imageInput.value = "";
     }
@@ -1031,15 +1132,47 @@ document.addEventListener("DOMContentLoaded", async function () {
         subEvent.color || "#1f2937"
       );
 
-      const imageHtml =
-        subEvent.image_url
-          ? `
+   // =========================
+// 하위 이벤트 이미지 위치
+// DB에 값이 없으면 기본값 50 사용
+// 50 = 가운데 위치
+// =========================
+
+const imagePosX =
+  subEvent.image_pos_x ?? 50;
+
+const imagePosY =
+  subEvent.image_pos_y ?? 50;
+
+
+// =========================
+// 하위 이벤트 이미지 HTML 생성
+// 이미지가 있으면 cover 방식으로 꽉 채움
+// object-position으로 슬라이더 위치 적용
+// 이미지가 없으면 대표색 배경만 표시
+// =========================
+
+const imageHtml =
+  subEvent.image_url
+    ? `
       <div class="sub-event-image-wrap">
-        <img src="${subEvent.image_url}" />
-        <div class="sub-event-image-fade"></div>
+
+        <!-- 하위 이벤트 카드 이미지 -->
+        <img
+          src="${subEvent.image_url}"
+          style="
+            object-position:
+              ${imagePosX}%
+              ${imagePosY}%;
+          "
+        />
+
       </div>
     `
-          : `<div class="sub-event-image-wrap no-sub-image"></div>`;
+    : `
+      <!-- 이미지가 없는 하위 이벤트용 배경 -->
+      <div class="sub-event-image-wrap no-sub-image"></div>
+    `;
 
       card.innerHTML =
         `
@@ -1211,6 +1344,28 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     uploadedSubColor =
       subEvent?.color || "#1f2937";
+
+    // =========================
+    // 하위 이벤트 기존 이미지 위치
+    // =========================
+
+    uploadedSubImagePosX =
+      subEvent?.image_pos_x ?? 50;
+
+    uploadedSubImagePosY =
+      subEvent?.image_pos_y ?? 50;
+
+    // 슬라이더 반영
+    setValue(
+      subImagePosX,
+      uploadedSubImagePosX
+    );
+
+    setValue(
+      subImagePosY,
+      uploadedSubImagePosY
+    );
+
 
     if (subImageInput) {
       subImageInput.value = "";
@@ -1414,6 +1569,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         const color =
           info.event.extendedProps.color || "#1f2937";
 
+        // =========================
+        // 메인 이벤트 이미지 위치
+        // =========================
+
+        const imagePosX =
+          info.event.extendedProps.imagePosX ?? 50;
+
+        const imagePosY =
+          info.event.extendedProps.imagePosY ?? 50;
+
         const category =
           info.event.extendedProps.category || CATEGORY_DEFAULT;
 
@@ -1421,7 +1586,17 @@ document.addEventListener("DOMContentLoaded", async function () {
           image
             ? `
               <div class="event-image-zone">
-                <img src="${image}" />
+                <!-- =========================
+     메인 이벤트 이미지
+========================= -->
+<img
+  src="${image}"
+  style="
+    object-position:
+      ${imagePosX}%
+      ${imagePosY}%;
+  "
+/>
               </div>
             `
             : `<div class="no-image-fill"></div>`;
@@ -1818,6 +1993,19 @@ document.addEventListener("DOMContentLoaded", async function () {
           color:
             uploadedColor || "#1f2937",
 
+          // =========================
+          // 이미지 위치 저장
+          // =========================
+          imagePosX:
+            Number(
+              safeValue(eventImagePosX, 50)
+            ),
+
+          imagePosY:
+            Number(
+              safeValue(eventImagePosY, 50)
+            ),
+
           category,
 
           description,
@@ -1865,6 +2053,24 @@ document.addEventListener("DOMContentLoaded", async function () {
         currentEvent.setExtendedProp(
           "description",
           description
+        );
+
+        // =========================
+        // 이미지 위치 즉시 반영
+        // =========================
+
+        currentEvent.setExtendedProp(
+          "imagePosX",
+          Number(
+            safeValue(eventImagePosX, 50)
+          )
+        );
+
+        currentEvent.setExtendedProp(
+          "imagePosY",
+          Number(
+            safeValue(eventImagePosY, 50)
+          )
         );
 
         allEvents =
@@ -2076,6 +2282,20 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         color:
           uploadedSubColor || "#1f2937",
+
+        // =========================
+        // 하위 이미지 위치 저장
+        // =========================
+
+        image_pos_x:
+          Number(
+            safeValue(subImagePosX, 50)
+          ),
+
+        image_pos_y:
+          Number(
+            safeValue(subImagePosY, 50)
+          ),
 
       };
 
