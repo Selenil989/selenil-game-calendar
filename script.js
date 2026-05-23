@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       addEventBtn.classList.remove("hidden");
 
       loginStatus.textContent =
-        `관리자 모드";
+        "관리자 모드";
 
     } else {
 
