@@ -380,26 +380,25 @@ body {
 
 
 /* =========================
-   주말 글씨 색
+   주말 글씨 색 (더 잘 보이게 진하게)
 ========================= */
 
 /* 일요일 요일 */
 .fc .fc-col-header-cell.fc-day-sun a {
-  color: #ff8a8a !important;
+  color: #7a1f1f !important;
 }
 
 /* 토요일 요일 */
 .fc .fc-col-header-cell.fc-day-sat a {
-  color: #ffb3b3 !important;
+  color: #8a2d2d !important;
 }
 
 /* 일요일 날짜 숫자 */
 .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
-  color: #ff8a8a !important;
+  color: #7a1f1f !important;
 }
 
 /* 토요일 날짜 숫자 */
 .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
-  color: #ffb3b3 !important;
+  color: #8a2d2d !important;
 }
-
