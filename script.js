@@ -1034,17 +1034,17 @@ document.addEventListener("DOMContentLoaded", async function () {
       const imageHtml =
         subEvent.image_url
           ? `
-            <div class="sub-event-image">
-              <img src="${subEvent.image_url}" />
-            </div>
-          `
-          : `<div class="sub-event-image no-sub-image"></div>`;
+      <div class="sub-event-image-wrap">
+        <img src="${subEvent.image_url}" />
+      </div>
+    `
+          : `<div class="sub-event-image-wrap no-sub-image"></div>`;
 
       card.innerHTML =
         `
           ${imageHtml}
 
-          <div class="sub-event-info">
+          <div class="sub-event-body">
 
             <div class="sub-event-top">
               ${getCategoryBadge(subEvent.category)}
@@ -1057,7 +1057,7 @@ document.addEventListener("DOMContentLoaded", async function () {
               ${subEvent.title}
             </div>
 
-            <div class="sub-event-desc">
+            <div class="sub-event-description">
               ${subEvent.description || ""}
             </div>
 
