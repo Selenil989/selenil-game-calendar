@@ -863,3 +863,108 @@ body {
   }
 
 }
+
+/* =========================
+   하위 이벤트 버튼 UI
+   메인 UI 색상과 통일
+========================= */
+
+#addSubEventBtn,
+#saveSubEventBtn {
+  background: #4f46e5;
+  color: white;
+}
+
+#addSubEventBtn:hover,
+#saveSubEventBtn:hover {
+  background: #6366f1;
+}
+
+#deleteSubEventBtn {
+  background: #dc2626;
+  color: white;
+}
+
+#deleteSubEventBtn:hover {
+  background: #ef4444;
+}
+
+#closeDetailBtn,
+#closeSubEventBtn {
+  background: #374151;
+  color: white;
+}
+
+#closeDetailBtn:hover,
+#closeSubEventBtn:hover {
+  background: #4b5563;
+}
+
+/* 하위 이벤트 버튼 공통 모양 */
+#addSubEventBtn,
+#saveSubEventBtn,
+#deleteSubEventBtn,
+#closeDetailBtn,
+#closeSubEventBtn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* =========================
+   상세 팝업 상단
+========================= */
+
+.detail-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 12px;
+
+  margin-bottom: 10px;
+}
+
+.detail-title-wrap {
+  flex: 1;
+}
+
+#detailTitle {
+  margin: 6px 0 0 0;
+}
+
+
+
+/* =========================
+   메인 이벤트 수정 아이콘 버튼
+========================= */
+
+#editMainEventBtn {
+  border: none;
+  border-radius: 10px;
+
+  width: 38px;
+  height: 38px;
+
+  background: #4f46e5;
+  color: white;
+
+  font-size: 18px;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
+}
+
+#editMainEventBtn:hover {
+  background: #6366f1;
+  transform: scale(1.08);
+}

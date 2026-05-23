@@ -132,7 +132,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   const clearSearchBtn =
     getEl("clearSearchBtn");
 
-
+  const editMainEventBtn =
+    getEl("editMainEventBtn");
 
   // =========================
   // 상세 보기 모달 요소
@@ -730,12 +731,12 @@ document.addEventListener("DOMContentLoaded", async function () {
       const reader =
         new FileReader();
 
-      reader.onload = function(e) {
+      reader.onload = function (e) {
 
         const img =
           new Image();
 
-        img.onload = function() {
+        img.onload = function () {
 
           const canvas =
             document.createElement("canvas");
@@ -1137,6 +1138,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         event.extendedProps.description || "";
     }
 
+    if (editMainEventBtn) {
+
+      if (isAdmin) {
+
+        editMainEventBtn.classList.remove("hidden");
+
+      } else {
+
+        editMainEventBtn.classList.add("hidden");
+
+      }
+
+    }
+
     if (addSubEventBtn) {
       if (isAdmin) {
         addSubEventBtn.classList.remove("hidden");
@@ -1276,7 +1291,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       // 빈 날짜 더블클릭 시 일정 생성
       // =========================
 
-      dateClick: function(info) {
+      dateClick: function (info) {
 
         if (!isAdmin) return;
 
@@ -1305,7 +1320,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       // 일정 드래그 이동 후 저장
       // =========================
 
-      eventDrop: async function(info) {
+      eventDrop: async function (info) {
 
         if (!isAdmin) {
 
@@ -1390,7 +1405,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       // 이벤트 배너 UI
       // =========================
 
-      eventContent: function(info) {
+      eventContent: function (info) {
 
         const image =
           info.event.extendedProps.image;
@@ -1458,7 +1473,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       // 이벤트 표시 후 처리
       // =========================
 
-      eventDidMount: function(info) {
+      eventDidMount: function (info) {
 
         const dayCell =
           document.querySelector(
@@ -1498,24 +1513,6 @@ document.addEventListener("DOMContentLoaded", async function () {
           () => {
 
             openDetailModal(
-              info.event
-            );
-
-          }
-        );
-
-        // 더블클릭 = 관리자 편집
-        info.el.addEventListener(
-          "dblclick",
-          (e) => {
-
-            e.stopPropagation();
-
-            if (!isAdmin) return;
-
-            hide(detailModal);
-
-            openModalForEvent(
               info.event
             );
 
@@ -1727,6 +1724,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   );
 
+
+  // =========================
+  // 상세창 메인 이벤트 수정 버튼
+  // =========================
+
+  editMainEventBtn?.addEventListener(
+    "click",
+    () => {
+
+      if (!isAdmin) return;
+
+      if (!currentDetailEvent) return;
+
+      hide(detailModal);
+
+      openModalForEvent(
+        currentDetailEvent
+      );
+
+    }
+  );
 
 
   // =========================

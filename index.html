@@ -160,16 +160,27 @@
   <!-- 이벤트 상세창 -->
   <div id="detailModal" class="modal hidden">
 
-    <div class="modal-content detail-content">
+  <div class="detail-header-row">
 
-      <img id="detailImage" class="detail-image" />
+  <div class="detail-title-wrap">
 
-      <div class="detail-header">
-        <span id="detailCategory" class="category-badge">업데이트</span>
-        <h2 id="detailTitle">이벤트명</h2>
-      </div>
+    <div id="detailCategory"></div>
 
-      <div id="detailPeriod" class="detail-period"></div>
+    <h2 id="detailTitle"></h2>
+
+  </div>
+
+  <button
+    id="editMainEventBtn"
+    class="hidden"
+    title="메인 이벤트 수정"
+  >
+    ✏️
+  </button>
+
+</div>
+
+<div id="detailPeriod"></div>
 
       <p id="detailDescription" class="detail-description"></p>
 
