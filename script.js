@@ -536,28 +536,27 @@ document.addEventListener("DOMContentLoaded", async function () {
   // FullCalendar 생성
   // =========================
 
-  calendar =
-    new FullCalendar.Calendar(calendarEl, {
+ calendar =
+  new FullCalendar.Calendar(calendarEl, {
 
-      // 기본 월간 캘린더
-      initialView:
-        "dayGridMonth",
+    // 기본 월간 캘린더
+    initialView:
+      "dayGridMonth",
 
-      // 한국어 적용 (요일, 버튼 텍스트 등)
-      locale:
-        "ko",
+    // 한국어 적용
+    locale:
+      "ko",
 
-      // 상단 년/월 표시 형식
-      // 예: 2026년 5월
-      titleFormat: function(date) {
+    // 상단 년/월 표시 형식
+    // 예: 2026년 5월
+    titleFormat: {
+      year: "numeric",
+      month: "long"
+    },
 
-        return `${date.date.year}년 ${date.date.month + 1}월`;
-
-      },
-
-      // 관리자만 드래그 수정 가능
-      editable:
-        false,
+    // 관리자만 드래그 수정 가능
+    editable:
+      false,
 
       // 내용 높이에 맞춰 자동 크기 조절
       height:
