@@ -85,6 +85,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   const toast =
     document.getElementById("toast");
 
+  const searchInput =
+    document.getElementById("searchInput");
+
+  const clearSearchBtn =
+    document.getElementById("clearSearchBtn");
+
 
 
   // =========================
@@ -100,6 +106,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   let uploadedImage = "";
 
   let calendar = null;
+
+  let allEvents = [];
 
 
 
@@ -524,39 +532,74 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 검색 적용 함수
+  // =========================
+
+  function applySearchFilter() {
+
+    if (!calendar) return;
+
+    const keyword =
+      searchInput.value.trim().toLowerCase();
+
+    const filteredEvents =
+      allEvents.filter(event => {
+
+        return event.title
+          .toLowerCase()
+          .includes(keyword);
+
+      });
+
+    calendar.removeAllEvents();
+
+    filteredEvents.forEach(event => {
+
+      calendar.addEvent(event);
+
+    });
+
+  }
+
+
+
+  // =========================
   // 일정 먼저 불러오기
   // =========================
 
   const loadedEvents =
     await loadEventsFromSupabase();
 
+  allEvents =
+    [...loadedEvents];
 
 
-   // =========================
+
+  // =========================
   // FullCalendar 생성
   // =========================
 
- calendar =
-  new FullCalendar.Calendar(calendarEl, {
+  calendar =
+    new FullCalendar.Calendar(calendarEl, {
 
-    // 기본 월간 캘린더
-    initialView:
-      "dayGridMonth",
+      // 기본 월간 캘린더
+      initialView:
+        "dayGridMonth",
 
-    // 한국어 적용
-    locale:
-      "ko",
+      // 한국어 적용
+      locale:
+        "ko",
 
-    // 상단 년/월 표시 형식
-    // 예: 2026년 5월
-    titleFormat: {
-      year: "numeric",
-      month: "long"
-    },
+      // 상단 년/월 표시 형식
+      // 예: 2026년 5월
+      titleFormat: {
+        year: "numeric",
+        month: "long"
+      },
 
-    // 관리자만 드래그 수정 가능
-    editable:
-      false,
+      // 관리자만 드래그 수정 가능
+      editable:
+        false,
 
       // 내용 높이에 맞춰 자동 크기 조절
       height:
@@ -574,13 +617,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       dateClick: function(info) {
 
-        // 방문자는 생성 불가
         if (!isAdmin) return;
 
         const now =
           new Date().getTime();
 
-        // 300ms 안에 두 번 클릭하면 더블클릭으로 처리
         if (
           window.lastDateClick &&
           now - window.lastDateClick < 300
@@ -605,7 +646,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       eventDrop: async function(info) {
 
-        // 방문자는 이동 불가
         if (!isAdmin) {
 
           info.revert();
@@ -635,13 +675,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         };
 
-        // Supabase 업데이트
         const ok =
           await updateEventInSupabase(
             eventData
           );
 
-        // 실패하면 원래 위치로 복구
         if (!ok) {
 
           info.revert();
@@ -650,12 +688,35 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         }
 
+        allEvents =
+          allEvents.map(event => {
+
+            if (event.id === eventData.id) {
+
+              return eventData;
+
+            }
+
+            return event;
+
+          });
+
+        applySearchFilter();
+
         showToast("이동 저장 완료");
 
       },
 
-            events:
+
+
+      // =========================
+      // Supabase에서 불러온 일정 표시
+      // =========================
+
+      events:
         loadedEvents,
+
+
 
       // =========================
       // 이벤트 배너 UI
@@ -672,14 +733,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             ? `<img src="${image}" />`
             : `<div class="no-image"></div>`;
 
-        // 오늘 날짜
         const today =
           new Date();
 
         today.setHours(0, 0, 0, 0);
 
-        // 종료일 있으면 종료일 기준
-        // 없으면 시작일 기준
         const compareDate =
           info.event.end
             ? new Date(info.event.end)
@@ -687,7 +745,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         compareDate.setHours(0, 0, 0, 0);
 
-        // 종료 여부
         const isExpired =
           compareDate < today;
 
@@ -712,6 +769,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         };
 
       },
+
+
+
+      // =========================
+      // 이벤트 더블클릭 편집
+      // =========================
 
       eventDidMount: function(info) {
 
@@ -747,6 +810,35 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================
 
   await checkLoginStatus();
+
+
+
+  // =========================
+  // 검색 입력 시 즉시 필터링
+  // =========================
+
+  searchInput.addEventListener(
+    "input",
+    applySearchFilter
+  );
+
+
+
+  // =========================
+  // 검색 초기화
+  // =========================
+
+  clearSearchBtn.addEventListener(
+    "click",
+    () => {
+
+      searchInput.value =
+        "";
+
+      applySearchFilter();
+
+    }
+  );
 
 
 
@@ -995,6 +1087,21 @@ document.addEventListener("DOMContentLoaded", async function () {
           uploadedImage || ""
         );
 
+        allEvents =
+          allEvents.map(event => {
+
+            if (event.id === eventData.id) {
+
+              return eventData;
+
+            }
+
+            return event;
+
+          });
+
+        applySearchFilter();
+
         showToast("수정 완료");
 
       } else {
@@ -1024,9 +1131,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (!ok) return;
 
-        calendar.addEvent(
-          eventData
-        );
+        allEvents.push(eventData);
+
+        applySearchFilter();
 
         showToast("추가 완료");
 
@@ -1058,14 +1165,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (!okConfirm) return;
 
+      const deletedEventId =
+        currentEvent.id;
+
       const ok =
         await deleteEventFromSupabase(
-          currentEvent.id
+          deletedEventId
         );
 
       if (!ok) return;
 
-      currentEvent.remove();
+      allEvents =
+        allEvents.filter(event => {
+
+          return event.id !== deletedEventId;
+
+        });
+
+      applySearchFilter();
 
       showToast("삭제 완료");
 
