@@ -689,8 +689,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     "click",
     () => {
 
-      loginEmail.value =
-        ADMIN_EMAIL;
+      loginEmail.value = "";
 
       loginPassword.value =
         "";
