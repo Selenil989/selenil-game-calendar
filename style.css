@@ -402,3 +402,70 @@ body {
 .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
   color: #ffb3b3 !important;
 }
+
+
+
+/* =========================
+   모바일 화면 최적화
+========================= */
+
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .top-buttons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .top-buttons button {
+    flex: 1;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .fc {
+    padding: 10px;
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+
+  .fc-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fc-toolbar-title {
+    font-size: 20px !important;
+  }
+
+  .fc-daygrid-day-frame {
+    min-height: 90px;
+  }
+
+  .game-event {
+    height: 46px;
+    border-radius: 8px;
+  }
+
+  .title {
+    font-size: 10px;
+  }
+
+  .overlay {
+    padding: 6px;
+  }
+
+  .modal-content {
+    width: calc(100% - 30px);
+    max-width: 400px;
+    padding: 20px;
+  }
+}
