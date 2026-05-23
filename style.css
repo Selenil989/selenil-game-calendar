@@ -968,3 +968,84 @@ body {
   background: #6366f1;
   transform: scale(1.08);
 }
+
+/* =========================
+   상세 팝업 구조 복구
+   수정 버튼은 상세창 오른쪽 위에 고정
+========================= */
+
+.detail-modal-content {
+  position: relative;
+}
+
+.edit-main-icon {
+  position: absolute;
+
+  top: 18px;
+  right: 18px;
+
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #4f46e5;
+  color: white;
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 10;
+
+  transition: 0.2s;
+}
+
+.edit-main-icon:hover {
+  background: #6366f1;
+  transform: scale(1.08);
+}
+
+/* 기존에 잘못 들어간 헤더 래퍼 스타일 무력화 */
+.detail-header-row,
+.detail-title-wrap {
+  display: contents;
+}
+
+/* 상세창/하위 이벤트 안의 카테고리 뱃지는 일반 흐름으로 표시 */
+#detailCategory .category-badge,
+.sub-event-top .category-badge {
+  position: static;
+
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+
+  font-size: 10px;
+  padding: 3px 7px;
+
+  transform: none;
+}
+
+/* 캘린더 이벤트 안의 카테고리만 왼쪽 위에 고정 */
+.game-event .category-badge {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+}
+
+/* 상세 제목은 버튼과 겹치지 않게 오른쪽 여백 확보 */
+#detailTitle {
+  padding-right: 46px;
+}
+
+/* 하위 이벤트 카드 이미지 클래스 정리 */
+.sub-event-image-wrap img {
+  object-position: center;
+}
