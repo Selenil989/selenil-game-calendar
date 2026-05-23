@@ -654,8 +654,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       },
 
-      events:
+            events:
         loadedEvents,
+
+      // =========================
+      // 이벤트 배너 UI
+      // 종료된 이벤트 자동 흐리게
+      // =========================
 
       eventContent: function(info) {
 
@@ -667,10 +672,29 @@ document.addEventListener("DOMContentLoaded", async function () {
             ? `<img src="${image}" />`
             : `<div class="no-image"></div>`;
 
+        // 오늘 날짜
+        const today =
+          new Date();
+
+        today.setHours(0, 0, 0, 0);
+
+        // 종료일 있으면 종료일 기준
+        // 없으면 시작일 기준
+        const compareDate =
+          info.event.end
+            ? new Date(info.event.end)
+            : new Date(info.event.start);
+
+        compareDate.setHours(0, 0, 0, 0);
+
+        // 종료 여부
+        const isExpired =
+          compareDate < today;
+
         return {
 
           html: `
-            <div class="game-event">
+            <div class="game-event ${isExpired ? "expired" : ""}">
 
               ${imageHtml}
 
