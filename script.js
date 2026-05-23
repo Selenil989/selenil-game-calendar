@@ -241,29 +241,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let currentSubEvent = null;
 
-  // 신규 생성일 때 기본 중앙
-  if (!subEvent) {
-
-    setValue(subImagePosX, 50);
-    setValue(subImagePosY, 50);
-
-  }
-
   let uploadedImage = "";
 
   let uploadedColor = "#1f2937";
 
-
-  // =========================
-  // 신규 이벤트 기본 이미지 위치
-  // =========================
-
-  uploadedImagePosX = 50;
-  uploadedImagePosY = 50;
-
-  // 슬라이더 초기화
-  setValue(eventImagePosX, 50);
-  setValue(eventImagePosY, 50);
 
 
   // =========================
@@ -988,6 +969,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedColor =
       "#1f2937";
 
+    // =========================
+    // 신규 메인 이벤트 이미지 위치 기본값
+    // 50 = 중앙
+    // =========================
+
+    uploadedImagePosX = 50;
+    uploadedImagePosY = 50;
+
+    // 메인 이미지 위치 슬라이더 초기화
+    setValue(eventImagePosX, 50);
+    setValue(eventImagePosY, 50);
+
     if (imageInput) {
       imageInput.value = "";
     }
@@ -1512,6 +1505,13 @@ const imageHtml =
 
             description:
               info.event.extendedProps.description || "",
+
+            // 드래그 이동 시 기존 이미지 위치 유지
+            imagePosX:
+              info.event.extendedProps.imagePosX ?? 50,
+
+            imagePosY:
+              info.event.extendedProps.imagePosY ?? 50,
           },
 
         };
