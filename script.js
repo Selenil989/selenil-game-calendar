@@ -99,6 +99,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let uploadedImage = "";
 
+  let calendar = null;
+
 
 
   // =========================
@@ -176,11 +178,21 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   async function checkLoginStatus() {
 
-    const { data } =
+    const { data, error } =
       await supabaseClient.auth.getUser();
 
-    currentUser =
-      data.user || null;
+    if (error) {
+
+      console.error(error);
+
+      currentUser = null;
+
+    } else {
+
+      currentUser =
+        data.user || null;
+
+    }
 
     applyAuthUI();
 
@@ -471,6 +483,56 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 로그인 실행 함수
+  // 버튼 클릭 / 엔터키 공용
+  // =========================
+
+  async function handleLogin() {
+
+    const email =
+      loginEmail.value.trim();
+
+    const password =
+      loginPassword.value;
+
+    const { data, error } =
+      await supabaseClient.auth
+        .signInWithPassword({
+
+          email,
+          password,
+
+        });
+
+    if (error) {
+
+      console.error(error);
+
+      alert("로그인 실패");
+
+      return;
+
+    }
+
+    currentUser =
+      data.user;
+
+    applyAuthUI();
+
+    loginPassword.value =
+      "";
+
+    loginModal.classList.add(
+      "hidden"
+    );
+
+    showToast("로그인 완료");
+
+  }
+
+
+
+  // =========================
   // 일정 먼저 불러오기
   // =========================
 
@@ -483,7 +545,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // FullCalendar 생성
   // =========================
 
-  const calendar =
+  calendar =
     new FullCalendar.Calendar(calendarEl, {
 
       initialView:
@@ -661,56 +723,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     }
   );
-
-
-
-  // =========================
-  // 로그인 실행 함수
-  // 버튼 클릭 / 엔터키 공용
-  // =========================
-
-  async function handleLogin() {
-
-    const email =
-      loginEmail.value.trim();
-
-    const password =
-      loginPassword.value;
-
-    const { data, error } =
-      await supabaseClient.auth
-        .signInWithPassword({
-
-          email,
-          password,
-
-        });
-
-    if (error) {
-
-      console.error(error);
-
-      alert("로그인 실패");
-
-      return;
-
-    }
-
-    currentUser =
-      data.user;
-
-    applyAuthUI();
-
-    loginPassword.value =
-      "";
-
-    loginModal.classList.add(
-      "hidden"
-    );
-
-    showToast("로그인 완료");
-
-  }
 
 
 
