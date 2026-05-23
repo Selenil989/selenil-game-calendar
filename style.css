@@ -5,8 +5,10 @@
 body {
   margin: 0;
   padding: 30px;
+
   background: #0f1115;
   color: white;
+
   font-family: sans-serif;
 }
 
@@ -25,21 +27,25 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   margin-bottom: 10px;
 }
 
 .top-buttons {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .top-buttons button {
   background: #4f46e5;
   border: none;
+
   color: white;
+
   padding: 12px 18px;
+
   border-radius: 10px;
+
   cursor: pointer;
   font-size: 14px;
 }
@@ -50,6 +56,7 @@ body {
 
 .login-status {
   margin-bottom: 20px;
+
   color: #9ca3af;
   font-size: 14px;
 }
@@ -72,8 +79,11 @@ body {
 
 .fc {
   background: #1a1f2b;
+
   padding: 20px;
+
   border-radius: 20px;
+
   color: white;
 }
 
@@ -104,24 +114,44 @@ body {
 
 /* =========================
    이벤트 배너
+   앞쪽 이미지 + 뒤쪽 대표색 그라데이션
 ========================= */
 
 .game-event {
   position: relative;
-  height: 80px;
+  height: 44px;
+  width: 100%;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--event-color, #1f2937) 0%,
+      color-mix(in srgb, var(--event-color, #1f2937) 75%, #000 25%) 100%
+    );
+
   box-shadow: 0 4px 10px rgba(0,0,0,0.35);
   transition: 0.2s;
 }
 
 .game-event:hover {
-  transform: scale(1.03);
+  transform: scale(1.01);
   box-shadow: 0 10px 25px rgba(0,0,0,0.45);
 }
 
-.game-event img {
+/* 이미지가 보이는 앞쪽 영역 */
+.event-image-zone {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--event-image-width, 34%);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 실제 이미지 */
+.event-image-zone img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -129,57 +159,108 @@ body {
   display: block;
 }
 
+/* 이미지와 대표색이 자연스럽게 이어지는 그라데이션 */
+.event-image-zone::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 45%;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0,0,0,0),
+      var(--event-color, #1f2937)
+    );
+}
+
+/* 이미지가 없는 이벤트 */
+.no-image-fill {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--event-color, #1f2937),
+      #111827
+    );
+}
+
 .no-image {
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    #374151,
-    #111827
-  );
+
+  background:
+    linear-gradient(
+      135deg,
+      #374151,
+      #111827
+    );
 }
 
+/* 제목 가독성용 오버레이 */
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.85),
-    rgba(0,0,0,0.15)
-  );
+
+  background:
+    linear-gradient(
+      to right,
+      rgba(0,0,0,0.58),
+      rgba(0,0,0,0.12)
+    );
+
   display: flex;
-  align-items: flex-end;
-  padding: 10px;
+  align-items: center;
+
+  padding: 0 10px;
+
+  z-index: 2;
 }
 
 .title {
   font-weight: bold;
   font-size: 13px;
   line-height: 1.2;
+  color: white;
+
+  text-shadow:
+    0 1px 3px rgba(0,0,0,0.85);
 }
 
 
 
 /* =========================
-   모달
+   모달 공통
 ========================= */
 
 .modal {
   position: fixed;
   inset: 0;
+
   background: rgba(0,0,0,0.7);
+
   display: flex;
   justify-content: center;
   align-items: center;
+
   z-index: 99999;
 }
 
 .modal-content {
   width: 400px;
+
   background: #1f2937;
+
   padding: 25px;
+
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.5);
 }
 
 .modal-content h2 {
@@ -188,46 +269,62 @@ body {
 
 .modal-content label {
   display: block;
+
   margin-top: 15px;
   margin-bottom: 5px;
+
   font-size: 14px;
 }
 
 .modal-content input {
   width: 100%;
+
   padding: 10px;
+
   border-radius: 8px;
+
   border: none;
+
   background: #374151;
   color: white;
+
   box-sizing: border-box;
 }
 
 #previewImage {
   width: 100%;
+
   margin-top: 15px;
+
   border-radius: 12px;
+
   display: none;
 }
 
 
 
 /* =========================
-   버튼
+   모달 버튼
 ========================= */
 
 .buttons {
   display: flex;
   gap: 10px;
+
   margin-top: 20px;
 }
 
 .buttons button {
   flex: 1;
+
   padding: 12px;
+
   border: none;
+
   border-radius: 10px;
+
   cursor: pointer;
+
   color: white;
 }
 
@@ -248,225 +345,35 @@ body {
 
 
 /* =========================
-   토스트
+   저장 완료 토스트
 ========================= */
 
 #toast {
   position: fixed;
+
   right: 30px;
   bottom: 30px;
+
   background: #4f46e5;
   color: white;
+
   padding: 14px 20px;
+
   border-radius: 12px;
+
   opacity: 0;
+
   pointer-events: none;
+
   transform: translateY(20px);
+
   transition: 0.3s;
+
   z-index: 999999;
 }
 
 #toast.show {
   opacity: 1;
+
   transform: translateY(0);
-}
-
-
-
-/* =========================
-   요일 헤더
-========================= */
-
-.fc-col-header-cell {
-  background: #2b2b2b;
-}
-
-.fc-col-header-cell-cushion {
-  color: white !important;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-
-
-/* =========================
-   주말 스타일
-========================= */
-
-.fc .fc-daygrid-day.fc-day-sun {
-  background: rgba(255, 80, 80, 0.08) !important;
-}
-
-.fc .fc-daygrid-day.fc-day-sat {
-  background: rgba(255, 120, 120, 0.06) !important;
-}
-
-.fc .fc-col-header-cell.fc-day-sun {
-  background: rgba(180, 40, 40, 0.45) !important;
-}
-
-.fc .fc-col-header-cell.fc-day-sat {
-  background: rgba(160, 50, 50, 0.35) !important;
-}
-
-.fc .fc-col-header-cell.fc-day-sun a {
-  color: #7a1f1f !important;
-}
-
-.fc .fc-col-header-cell.fc-day-sat a {
-  color: #8a2d2d !important;
-}
-
-.fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
-  color: #ff8a8a !important;
-}
-
-.fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
-  color: #ffb3b3 !important;
-}
-
-
-
-/* =========================
-   모바일 최적화
-========================= */
-
-@media (max-width: 768px) {
-
-  body {
-    padding: 10px;
-  }
-
-  .top-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .top-buttons {
-    width: 100%;
-  }
-
-  .top-buttons button {
-    flex: 1;
-    min-width: 120px;
-  }
-
-  .fc {
-    padding: 10px;
-    overflow-x: auto;
-  }
-
-  .fc-toolbar {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .fc-toolbar-title {
-    font-size: 20px !important;
-    text-align: center;
-  }
-
-  .fc-daygrid-day-frame {
-    min-height: 80px;
-  }
-
-  .game-event {
-    height: 44px;
-  }
-
-  .title {
-    font-size: 10px;
-  }
-
-  .overlay {
-    padding: 6px;
-  }
-
-  .modal-content {
-    width: calc(100% - 20px);
-    max-width: 420px;
-    padding: 20px;
-  }
-
-}
-
-
-/* =========================
-   종료된 이벤트 흐리게 표시
-========================= */
-
-.game-event.expired {
-  opacity: 0.42;
-  filter: grayscale(70%);
-}
-
-.game-event.expired:hover {
-  opacity: 0.65;
-  filter: grayscale(40%);
-}
-
-
-/* =========================
-   오늘 날짜 강조
-========================= */
-
-.fc .fc-day-today {
-  background: rgba(99, 102, 241, 0.18) !important;
-
-  box-shadow:
-    inset 0 0 0 2px rgba(129, 140, 248, 0.7),
-    0 0 20px rgba(99, 102, 241, 0.18);
-}
-
-/* 오늘 날짜 숫자 강조 */
-.fc .fc-day-today .fc-daygrid-day-number {
-  color: #c7d2fe !important;
-  font-weight: bold;
-}
-
-
-/* =========================
-   일정 검색창
-========================= */
-
-.search-box {
-  display: flex;
-  gap: 10px;
-
-  margin-bottom: 20px;
-}
-
-.search-box input {
-  flex: 1;
-
-  padding: 12px 14px;
-
-  border-radius: 10px;
-  border: none;
-
-  background: #1f2937;
-  color: white;
-
-  font-size: 14px;
-}
-
-.search-box input::placeholder {
-  color: #9ca3af;
-}
-
-.search-box button {
-  padding: 12px 16px;
-
-  border: none;
-  border-radius: 10px;
-
-  background: #374151;
-  color: white;
-
-  cursor: pointer;
-}
-
-.search-box button:hover {
-  background: #4b5563;
 }

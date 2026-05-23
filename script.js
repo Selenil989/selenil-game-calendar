@@ -105,6 +105,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let uploadedImage = "";
 
+  let uploadedColor = "#1f2937";
+
   let calendar = null;
 
   let allEvents = [];
@@ -182,7 +184,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // =========================
   // 로그인 상태 확인
-  // 로그인 안 되어 있어도 에러 안 나게 처리
   // =========================
 
   async function checkLoginStatus() {
@@ -235,6 +236,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       extendedProps: {
         image: item.image_url || "",
+        color: item.color || "#1f2937",
       },
 
     }));
@@ -265,6 +267,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           image_url:
             eventData.extendedProps.image || "",
+
+          color:
+            eventData.extendedProps.color || "#1f2937",
 
         });
 
@@ -304,6 +309,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           image_url:
             eventData.extendedProps.image || "",
+
+          color:
+            eventData.extendedProps.color || "#1f2937",
 
         })
         .eq("id", eventData.id);
@@ -404,6 +412,100 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 이미지 대표색 추출
+  // =========================
+
+  function extractAverageColor(file) {
+
+    return new Promise((resolve) => {
+
+      if (!file) {
+
+        resolve("#1f2937");
+
+        return;
+
+      }
+
+      const reader =
+        new FileReader();
+
+      reader.onload = function(e) {
+
+        const img =
+          new Image();
+
+        img.onload = function() {
+
+          const canvas =
+            document.createElement("canvas");
+
+          const ctx =
+            canvas.getContext("2d");
+
+          canvas.width = 40;
+          canvas.height = 40;
+
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+
+          const data =
+            ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            ).data;
+
+          let r = 0;
+          let g = 0;
+          let b = 0;
+          let count = 0;
+
+          for (let i = 0; i < data.length; i += 16) {
+
+            r += data[i];
+            g += data[i + 1];
+            b += data[i + 2];
+
+            count++;
+
+          }
+
+          r =
+            Math.floor(r / count);
+
+          g =
+            Math.floor(g / count);
+
+          b =
+            Math.floor(b / count);
+
+          resolve(
+            `rgb(${r}, ${g}, ${b})`
+          );
+
+        };
+
+        img.src =
+          e.target.result;
+
+      };
+
+      reader.readAsDataURL(file);
+
+    });
+
+  }
+
+
+
+  // =========================
   // 기존 일정 편집창 열기
   // =========================
 
@@ -423,6 +525,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     uploadedImage =
       event.extendedProps.image || "";
+
+    uploadedColor =
+      event.extendedProps.color || "#1f2937";
 
     imageInput.value =
       "";
@@ -469,6 +574,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     uploadedImage =
       "";
 
+    uploadedColor =
+      "#1f2937";
+
     imageInput.value =
       "";
 
@@ -483,7 +591,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // =========================
   // 로그인 실행 함수
-  // 버튼 클릭 / 엔터키 공용
   // =========================
 
   async function handleLogin() {
@@ -582,30 +689,23 @@ document.addEventListener("DOMContentLoaded", async function () {
   calendar =
     new FullCalendar.Calendar(calendarEl, {
 
-      // 기본 월간 캘린더
       initialView:
         "dayGridMonth",
 
-      // 한국어 적용
       locale:
         "ko",
 
-      // 상단 년/월 표시 형식
-      // 예: 2026년 5월
       titleFormat: {
         year: "numeric",
         month: "long"
       },
 
-      // 관리자만 드래그 수정 가능
       editable:
         false,
 
-      // 내용 높이에 맞춰 자동 크기 조절
       height:
         "auto",
 
-      // 일정이 많으면 +more로 접기
       dayMaxEvents:
         true,
 
@@ -671,6 +771,9 @@ document.addEventListener("DOMContentLoaded", async function () {
           extendedProps: {
             image:
               info.event.extendedProps.image || "",
+
+            color:
+              info.event.extendedProps.color || "#1f2937",
           },
 
         };
@@ -720,7 +823,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       // =========================
       // 이벤트 배너 UI
-      // 종료된 이벤트 자동 흐리게
+      // 앞쪽 2일 이미지 + 나머지 대표색 그라데이션
       // =========================
 
       eventContent: function(info) {
@@ -728,10 +831,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         const image =
           info.event.extendedProps.image;
 
+        const color =
+          info.event.extendedProps.color || "#1f2937";
+
         const imageHtml =
           image
-            ? `<img src="${image}" />`
-            : `<div class="no-image"></div>`;
+            ? `
+              <div class="event-image-zone">
+                <img src="${image}" />
+              </div>
+            `
+            : `<div class="no-image-fill"></div>`;
 
         const today =
           new Date();
@@ -751,7 +861,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         return {
 
           html: `
-            <div class="game-event ${isExpired ? "expired" : ""}">
+            <div
+              class="game-event ${isExpired ? "expired" : ""}"
+              style="--event-color: ${color};"
+            >
 
               ${imageHtml}
 
@@ -773,10 +886,51 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
       // =========================
-      // 이벤트 더블클릭 편집
+      // 이벤트 표시 후 처리
       // =========================
 
       eventDidMount: function(info) {
+
+        // =========================
+        // 배너 조각 길이 계산
+        // 앞쪽 최대 2일만 이미지 표시
+        // =========================
+
+        const dayCell =
+          document.querySelector(
+            ".fc-daygrid-day"
+          );
+
+        if (dayCell) {
+
+          const dayWidth =
+            dayCell.getBoundingClientRect().width;
+
+          const eventWidth =
+            info.el.getBoundingClientRect().width;
+
+          const segmentDays =
+            Math.max(
+              1,
+              Math.round(eventWidth / dayWidth)
+            );
+
+          const imageDays =
+            Math.min(2, segmentDays);
+
+          const imagePercent =
+            (imageDays / segmentDays) * 100;
+
+          info.el.style.setProperty(
+            "--event-image-width",
+            `${imagePercent}%`
+          );
+
+        }
+
+        // =========================
+        // 이벤트 더블클릭 편집
+        // =========================
 
         info.el.addEventListener(
           "dblclick",
@@ -970,12 +1124,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
-  // 이미지 미리보기
+  // 이미지 미리보기 + 대표색 추출
   // =========================
 
   imageInput.addEventListener(
     "change",
-    function () {
+    async function () {
 
       if (!isAdmin) return;
 
@@ -992,6 +1146,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       previewImage.style.display =
         "block";
+
+      uploadedColor =
+        await extractAverageColor(file);
 
     }
   );
@@ -1058,6 +1215,9 @@ document.addEventListener("DOMContentLoaded", async function () {
           extendedProps: {
             image:
               uploadedImage || "",
+
+            color:
+              uploadedColor || "#1f2937",
           },
 
         };
@@ -1085,6 +1245,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         currentEvent.setExtendedProp(
           "image",
           uploadedImage || ""
+        );
+
+        currentEvent.setExtendedProp(
+          "color",
+          uploadedColor || "#1f2937"
         );
 
         allEvents =
@@ -1120,6 +1285,9 @@ document.addEventListener("DOMContentLoaded", async function () {
           extendedProps: {
             image:
               uploadedImage || "",
+
+            color:
+              uploadedColor || "#1f2937",
           },
 
         };
