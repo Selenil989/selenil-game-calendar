@@ -748,45 +748,54 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
+/* =========================
+   하위 이벤트 이미지
+   메인 이벤트와 동일한 방식
+========================= */
+
 .sub-event-image-wrap {
   position: relative;
 
   min-height: 120px;
 
-  background:
-    linear-gradient(
-      90deg,
-      #111827 0%,
-      var(--event-color, #1f2937) 100%
-    );
-
-  display: flex;
-  align-items: stretch;
   overflow: hidden;
+
+  background: #111827;
 }
 
 .sub-event-image-wrap img {
+  width: 100%;
   height: 100%;
-  width: auto;
-  max-width: 100%;
 
-  object-fit: contain;
+  /* 메인 이벤트처럼 꽉 채우기 */
+  object-fit: cover;
+
+  /* JS 슬라이더 값 적용 */
+  object-position: center;
+
   display: block;
-
-  flex-shrink: 0;
 }
 
-.sub-event-image-fade {
-  flex: 1;
+.sub-event-image-wrap::after {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  right: 0;
+
+  width: 45%;
+  height: 100%;
 
   background:
     linear-gradient(
       90deg,
-      rgba(0,0,0,0) 0%,
-      var(--event-color, #1f2937) 100%
+      rgba(0,0,0,0),
+      var(--event-color, #1f2937)
     );
-}
 
+  pointer-events: none;
+}
 .no-sub-image {
   background:
     linear-gradient(135deg,
@@ -1058,9 +1067,4 @@ body {
 /* 상세 제목은 버튼과 겹치지 않게 오른쪽 여백 확보 */
 #detailTitle {
   padding-right: 46px;
-}
-
-/* 하위 이벤트 카드 이미지 클래스 정리 */
-.sub-event-image-wrap img {
-  object-position: center;
 }

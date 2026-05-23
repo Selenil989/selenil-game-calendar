@@ -1153,11 +1153,7 @@ const imageHtml =
         <!-- 하위 이벤트 카드 이미지 -->
         <img
           src="${subEvent.image_url}"
-          style="
-            object-position:
-              ${imagePosX}%
-              ${imagePosY}%;
-          "
+          style="object-position: ${imagePosX}% ${imagePosY}%;"
         />
 
       </div>
