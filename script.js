@@ -532,32 +532,56 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 
-  // =========================
+   // =========================
   // FullCalendar 생성
   // =========================
 
   calendar =
     new FullCalendar.Calendar(calendarEl, {
 
+      // 기본 월간 캘린더
       initialView:
         "dayGridMonth",
 
+      // 한국어 적용 (요일, 버튼 텍스트 등)
+      locale:
+        "ko",
+
+      // 상단 년/월 표시 형식
+      // 예: 2026년 5월
+      titleFormat: function(date) {
+
+        return `${date.date.year}년 ${date.date.month + 1}월`;
+
+      },
+
+      // 관리자만 드래그 수정 가능
       editable:
         false,
 
+      // 내용 높이에 맞춰 자동 크기 조절
       height:
         "auto",
 
+      // 일정이 많으면 +more로 접기
       dayMaxEvents:
         true,
 
+
+
+      // =========================
+      // 빈 날짜 더블클릭 시 일정 생성
+      // =========================
+
       dateClick: function(info) {
 
+        // 방문자는 생성 불가
         if (!isAdmin) return;
 
         const now =
           new Date().getTime();
 
+        // 300ms 안에 두 번 클릭하면 더블클릭으로 처리
         if (
           window.lastDateClick &&
           now - window.lastDateClick < 300
@@ -574,8 +598,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       },
 
+
+
+      // =========================
+      // 일정 드래그 이동 후 저장
+      // =========================
+
       eventDrop: async function(info) {
 
+        // 방문자는 이동 불가
         if (!isAdmin) {
 
           info.revert();
@@ -605,11 +636,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         };
 
+        // Supabase 업데이트
         const ok =
           await updateEventInSupabase(
             eventData
           );
 
+        // 실패하면 원래 위치로 복구
         if (!ok) {
 
           info.revert();
