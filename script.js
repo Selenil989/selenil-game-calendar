@@ -703,28 +703,76 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 
-  // =========================
-  // 로그인 실행
-  // =========================
+// =========================
+// 로그인 실행
+// =========================
 
-  submitLoginBtn.addEventListener(
-    "click",
-    async () => {
+submitLoginBtn.addEventListener(
+  "click",
+  async () => {
 
-      const email =
-        loginEmail.value.trim();
+    const email =
+      loginEmail.value.trim();
 
-      const password =
-        loginPassword.value;
+    const password =
+      loginPassword.value;
 
-      const { data, error } =
-        await supabaseClient.auth
-          .signInWithPassword({
+    const { data, error } =
+      await supabaseClient.auth
+        .signInWithPassword({
 
-            email,
-            password,
+          email,
+          password,
 
-          });
+        });
+
+    if (error) {
+
+      console.error(error);
+
+      alert("로그인 실패");
+
+      return;
+
+    }
+
+    currentUser =
+      data.user;
+
+    applyAuthUI();
+
+    loginModal.classList.add(
+      "hidden"
+    );
+
+    showToast("로그인 완료");
+
+  }
+);
+
+
+
+// =========================
+// 로그인창 엔터키 로그인
+// 이메일 / 비밀번호 둘 다 가능
+// =========================
+
+[loginEmail, loginPassword].forEach(input => {
+
+  input.addEventListener(
+    "keydown",
+    (e) => {
+
+      if (e.key === "Enter") {
+
+        submitLoginBtn.click();
+
+      }
+
+    }
+  );
+
+});
 
       if (error) {
 
