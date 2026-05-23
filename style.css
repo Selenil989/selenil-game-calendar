@@ -390,3 +390,18 @@ body {
   }
 
 }
+
+
+/* =========================
+   종료된 이벤트 흐리게 표시
+========================= */
+
+.game-event.expired {
+  opacity: 0.42;
+  filter: grayscale(70%);
+}
+
+.game-event.expired:hover {
+  opacity: 0.65;
+  filter: grayscale(40%);
+}
