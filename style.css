@@ -5,10 +5,8 @@
 body {
   margin: 0;
   padding: 30px;
-
   background: #0f1115;
   color: white;
-
   font-family: sans-serif;
 }
 
@@ -27,25 +25,21 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   margin-bottom: 10px;
 }
 
 .top-buttons {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .top-buttons button {
   background: #4f46e5;
   border: none;
-
   color: white;
-
   padding: 12px 18px;
-
   border-radius: 10px;
-
   cursor: pointer;
   font-size: 14px;
 }
@@ -56,7 +50,6 @@ body {
 
 .login-status {
   margin-bottom: 20px;
-
   color: #9ca3af;
   font-size: 14px;
 }
@@ -79,11 +72,8 @@ body {
 
 .fc {
   background: #1a1f2b;
-
   padding: 20px;
-
   border-radius: 20px;
-
   color: white;
 }
 
@@ -118,104 +108,78 @@ body {
 
 .game-event {
   position: relative;
-
   height: 80px;
-
   overflow: hidden;
-
   border-radius: 12px;
-
   cursor: pointer;
-
-  box-shadow:
-    0 4px 10px rgba(0,0,0,0.35);
-
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
   transition: 0.2s;
 }
 
 .game-event:hover {
   transform: scale(1.03);
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.45);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.45);
 }
 
 .game-event img {
   width: 100%;
   height: 100%;
-
   object-fit: cover;
   object-position: center;
-
   display: block;
 }
 
 .no-image {
   width: 100%;
   height: 100%;
-
-  background:
-    linear-gradient(
-      135deg,
-      #374151,
-      #111827
-    );
+  background: linear-gradient(
+    135deg,
+    #374151,
+    #111827
+  );
 }
 
 .overlay {
   position: absolute;
   inset: 0;
-
-  background:
-    linear-gradient(
-      to top,
-      rgba(0,0,0,0.85),
-      rgba(0,0,0,0.15)
-    );
-
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.85),
+    rgba(0,0,0,0.15)
+  );
   display: flex;
   align-items: flex-end;
-
   padding: 10px;
 }
 
 .title {
   font-weight: bold;
   font-size: 13px;
-
   line-height: 1.2;
 }
 
 
 
 /* =========================
-   모달 공통
+   모달
 ========================= */
 
 .modal {
   position: fixed;
   inset: 0;
-
   background: rgba(0,0,0,0.7);
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   z-index: 99999;
 }
 
 .modal-content {
   width: 400px;
-
   background: #1f2937;
-
   padding: 25px;
-
   border-radius: 20px;
-
-  box-shadow:
-    0 20px 60px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 
 .modal-content h2 {
@@ -224,62 +188,46 @@ body {
 
 .modal-content label {
   display: block;
-
   margin-top: 15px;
   margin-bottom: 5px;
-
   font-size: 14px;
 }
 
 .modal-content input {
   width: 100%;
-
   padding: 10px;
-
   border-radius: 8px;
-
   border: none;
-
   background: #374151;
   color: white;
-
   box-sizing: border-box;
 }
 
 #previewImage {
   width: 100%;
-
   margin-top: 15px;
-
   border-radius: 12px;
-
   display: none;
 }
 
 
 
 /* =========================
-   모달 버튼
+   버튼
 ========================= */
 
 .buttons {
   display: flex;
   gap: 10px;
-
   margin-top: 20px;
 }
 
 .buttons button {
   flex: 1;
-
   padding: 12px;
-
   border: none;
-
   border-radius: 10px;
-
   cursor: pointer;
-
   color: white;
 }
 
@@ -300,105 +248,79 @@ body {
 
 
 /* =========================
-   저장 완료 토스트
+   토스트
 ========================= */
 
 #toast {
   position: fixed;
-
   right: 30px;
   bottom: 30px;
-
   background: #4f46e5;
   color: white;
-
   padding: 14px 20px;
-
   border-radius: 12px;
-
   opacity: 0;
-
   pointer-events: none;
-
   transform: translateY(20px);
-
   transition: 0.3s;
-
   z-index: 999999;
 }
 
 #toast.show {
   opacity: 1;
-
   transform: translateY(0);
 }
 
+
+
 /* =========================
-   요일 헤더 글씨색 수정
+   요일 헤더
 ========================= */
 
 .fc-col-header-cell {
-  background: #2b2b2b;   /* 헤더 배경 */
+  background: #2b2b2b;
 }
 
 .fc-col-header-cell-cushion {
-  color: white !important;   /* 기본 요일 글씨 */
+  color: white !important;
   font-weight: bold;
   text-decoration: none;
 }
 
+
+
 /* =========================
-   주말 날짜 칸 배경색
+   주말 스타일
 ========================= */
 
-/* 일요일 날짜 칸 */
 .fc .fc-daygrid-day.fc-day-sun {
   background: rgba(255, 80, 80, 0.08) !important;
 }
 
-/* 토요일 날짜 칸 */
 .fc .fc-daygrid-day.fc-day-sat {
   background: rgba(255, 120, 120, 0.06) !important;
 }
 
-
-
-/* =========================
-   주말 요일 헤더 배경색
-========================= */
-
-/* 일요일 헤더 */
 .fc .fc-col-header-cell.fc-day-sun {
   background: rgba(180, 40, 40, 0.45) !important;
 }
 
-/* 토요일 헤더 */
 .fc .fc-col-header-cell.fc-day-sat {
   background: rgba(160, 50, 50, 0.35) !important;
 }
 
-
-
-/* =========================
-   주말 글씨 색 (더 잘 보이게 진하게)
-========================= */
-
-/* 일요일 요일 */
 .fc .fc-col-header-cell.fc-day-sun a {
   color: #7a1f1f !important;
 }
 
-/* 토요일 요일 */
 .fc .fc-col-header-cell.fc-day-sat a {
   color: #8a2d2d !important;
 }
 
-/* 일요일 날짜 숫자 */
 .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
   color: #ff8a8a !important;
 }
 
-/* 토요일 날짜 숫자 */
 .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
   color: #ffb3b3 !important;
 }
@@ -412,13 +334,7 @@ body {
 @media (max-width: 768px) {
 
   body {
-    padding: 8px;
-  }
-
-  .wrapper {
-    width: 100%;
-    max-width: none;
-    overflow-x: auto;
+    padding: 10px;
   }
 
   .top-bar {
@@ -429,33 +345,16 @@ body {
 
   .top-buttons {
     width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
   }
 
   .top-buttons button {
     flex: 1;
-    padding: 10px;
-    font-size: 13px;
-  }
-
-  #calendar {
-    width: 100%;
-    min-height: 600px;
-    display: block;
+    min-width: 120px;
   }
 
   .fc {
-    width: 100%;
-    min-width: 720px;
-    min-height: 600px;
     padding: 10px;
-    border-radius: 12px;
-  }
-
-  .fc-view-harness,
-  .fc-view-harness-active {
-    min-height: 600px !important;
+    overflow-x: auto;
   }
 
   .fc-toolbar {
@@ -465,15 +364,15 @@ body {
 
   .fc-toolbar-title {
     font-size: 20px !important;
+    text-align: center;
   }
 
   .fc-daygrid-day-frame {
-    min-height: 90px;
+    min-height: 80px;
   }
 
   .game-event {
-    height: 46px;
-    border-radius: 8px;
+    height: 44px;
   }
 
   .title {
@@ -485,8 +384,8 @@ body {
   }
 
   .modal-content {
-    width: calc(100% - 30px);
-    max-width: 400px;
+    width: calc(100% - 20px);
+    max-width: 420px;
     padding: 20px;
   }
 
