@@ -776,6 +776,7 @@ body {
   display: block;
 }
 
+/* 하위 이벤트 이미지 그라데이션 강화 */
 .sub-event-image-wrap::after {
   content: "";
 
@@ -784,14 +785,20 @@ body {
   top: 0;
   right: 0;
 
-  width: 45%;
+  width: 55%;
   height: 100%;
 
   background:
     linear-gradient(
       90deg,
-      rgba(0,0,0,0),
-      var(--event-color, #1f2937)
+      rgba(0,0,0,0.18) 0%,
+      rgba(0,0,0,0.35) 18%,
+      color-mix(
+        in srgb,
+        var(--event-color, #1f2937) 55%,
+        transparent
+      ) 45%,
+      var(--event-color, #1f2937) 100%
     );
 
   pointer-events: none;
