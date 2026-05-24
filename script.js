@@ -930,6 +930,34 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let calendar = null;
 
+  // =========================
+  // 캘린더 드래그 / 리사이즈 중 클릭 오작동 방지
+  // - 일정 길이 조절 직후 발생하는 click 이벤트가 상세창을 여는 것을 막습니다.
+  // =========================
+
+  let isCalendarEventInteractionActive = false;
+
+  let lastCalendarEventInteractionAt = 0;
+
+  function markCalendarEventInteractionStart() {
+    isCalendarEventInteractionActive = true;
+  }
+
+  function markCalendarEventInteractionEnd() {
+    lastCalendarEventInteractionAt = Date.now();
+
+    setTimeout(() => {
+      isCalendarEventInteractionActive = false;
+    }, 120);
+  }
+
+  function isCalendarEventInteractionCoolingDown() {
+    return (
+      isCalendarEventInteractionActive ||
+      Date.now() - lastCalendarEventInteractionAt < 180
+    );
+  }
+
   let allEvents = [];
 
   /* 원본 메인 이벤트 목록 */
@@ -4985,6 +5013,21 @@ document.addEventListener("DOMContentLoaded", async function () {
       editable:
         false,
 
+      // =========================
+      // 메인 이벤트 날짜 조절 옵션
+      // - 관리자 모드에서 메인 배너 앞/뒤 리사이즈 핸들로 시작일/종료일을 수정합니다.
+      // - 하위 이벤트(inlineSub)는 개별 event 설정으로 수정 불가 상태를 유지합니다.
+      // =========================
+
+      eventStartEditable:
+        true,
+
+      eventDurationEditable:
+        true,
+
+      eventResizableFromStart:
+        true,
+
       height:
         "auto",
 
@@ -5119,6 +5162,150 @@ document.addEventListener("DOMContentLoaded", async function () {
         applySearchFilter();
 
         showToast("이동 저장 완료");
+
+      },
+
+
+
+      // =========================
+      // 일정 드래그 / 리사이즈 상태 추적
+      // - 드래그나 리사이즈 직후 click 이벤트가 상세창을 여는 것을 방지합니다.
+      // =========================
+
+      eventDragStart: function () {
+        markCalendarEventInteractionStart();
+      },
+
+      eventDragStop: function () {
+        markCalendarEventInteractionEnd();
+      },
+
+      eventResizeStart: function () {
+        markCalendarEventInteractionStart();
+      },
+
+      eventResizeStop: function () {
+        markCalendarEventInteractionEnd();
+      },
+
+
+
+      // =========================
+      // 일정 길이 조절 후 저장
+      // - 메인 이벤트 앞/뒤 리사이즈 핸들로 시작일/종료일을 수정합니다.
+      // - 저장 후 캘린더를 다시 그려도 리사이즈 기능이 계속 유지되도록 allMainEvents를 갱신합니다.
+      // =========================
+
+      eventResize: async function (info) {
+
+        markCalendarEventInteractionEnd();
+
+        if (
+          info.event.extendedProps.displayType === "inlineSub"
+        ) {
+
+          info.revert();
+
+          return;
+
+        }
+
+        if (!isAdmin) {
+
+          info.revert();
+
+          return;
+
+        }
+
+        const resizedEnd =
+          subtractOneDay(info.event.endStr) ||
+          info.event.startStr;
+
+        const eventData = {
+
+          id:
+            info.event.id,
+
+          title:
+            info.event.title,
+
+          start:
+            info.event.startStr,
+
+          end:
+            resizedEnd,
+
+          extendedProps: {
+            image:
+              info.event.extendedProps.image || "",
+
+            color:
+              info.event.extendedProps.color || "#1f2937",
+
+            category:
+              info.event.extendedProps.category || CATEGORY_DEFAULT,
+
+            description:
+              info.event.extendedProps.description || "",
+
+            imagePosX:
+              info.event.extendedProps.imagePosX ?? 50,
+
+            imagePosY:
+              info.event.extendedProps.imagePosY ?? 50,
+
+            imageZoom:
+              info.event.extendedProps.imageZoom ?? 100,
+
+            textColor:
+              info.event.extendedProps.textColor || "",
+
+            textBgColor:
+              info.event.extendedProps.textBgColor || "",
+
+            textBgAlpha:
+              info.event.extendedProps.textBgAlpha,
+
+            textSize:
+              info.event.extendedProps.textSize,
+
+            rawEnd:
+              resizedEnd || "",
+
+            subEvents:
+              info.event.extendedProps.subEvents || [],
+          },
+
+        };
+
+        const ok =
+          await updateEventInSupabase(
+            eventData
+          );
+
+        if (!ok) {
+
+          info.revert();
+
+          return;
+
+        }
+
+        allMainEvents =
+          allMainEvents.map(event => {
+
+            if (event.id === eventData.id) {
+              return eventData;
+            }
+
+            return event;
+
+          });
+
+        applySearchFilter();
+
+        showToast("기간 저장 완료");
 
       },
 
@@ -5399,6 +5586,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
               if (isEditingMainEvent) return;
 
+              if (isCalendarEventInteractionCoolingDown()) return;
+
               if (isResizeHandleClick) return;
 
               const moveDistance =
@@ -5466,6 +5655,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       (e) => {
 
         if (isEditingMainEvent) return;
+        if (isCalendarEventInteractionCoolingDown()) return;
         if (pointerStartedOnResize) return;
 
         // FullCalendar 드래그 이동 / 길이 조절 직후 발생하는 클릭은 상세창을 열지 않습니다.

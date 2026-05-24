@@ -7987,3 +7987,71 @@ body {
   pointer-events: auto !important;
   cursor: ew-resize !important;
 }
+
+/* =========================
+   안정1.1 메인 배너 클릭/호버 단일화
+   - 메인 배너 내부 이미지, 그라데이션, 텍스트, 서브배너, +N 뱃지는 전부 시각 요소로만 둡니다.
+   - 실제 클릭/호버 기준은 FullCalendar 이벤트 루트(.fc-event / harness) 하나로 통일합니다.
+   - 일정 길이 조절 리사이즈 핸들은 기존 기능 보존을 위해 예외로 둡니다.
+========================= */
+
+.fc-daygrid-event-harness:has(.game-event),
+.fc-event:has(.game-event),
+.fc-event:has(.game-event) .fc-event-main,
+.fc-event:has(.game-event) .fc-event-main-frame,
+.fc-event:has(.game-event) .fc-event-title-container {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.fc-event:has(.game-event) .game-event,
+.fc-event:has(.game-event) .game-event *,
+.fc-event:has(.game-event) .game-event::before,
+.fc-event:has(.game-event) .game-event::after {
+  pointer-events: none !important;
+}
+
+.fc-event:has(.game-event) .fc-event-resizer,
+.fc-event:has(.game-event) .fc-event-resizer * {
+  pointer-events: auto !important;
+  cursor: ew-resize !important;
+}
+
+/* 내부 요소가 아닌 이벤트 루트 hover 기준으로 메인 배너 애니메이션을 유지합니다. */
+.fc-daygrid-event-harness:has(.game-event):hover {
+  transform: translateY(-1px) scale(1.01) !important;
+  transform-origin: center center !important;
+  z-index: 20 !important;
+}
+
+.fc-daygrid-event-harness:has(.game-event):hover .game-event {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+  filter: brightness(1.04);
+}
+
+
+/* =========================
+   안정2 보정: 리사이즈 핸들 지속 복구
+   - 메인 배너 내부 시각 요소는 클릭을 받지 않습니다.
+   - FullCalendar가 리사이즈 후 DOM을 다시 그려도 앞/뒤 기간 조절 핸들은 계속 마우스 이벤트를 받습니다.
+========================= */
+
+.fc-event:has(.game-event) .fc-event-resizer,
+.fc-event:has(.game-event) .fc-event-resizer-start,
+.fc-event:has(.game-event) .fc-event-resizer-end,
+.fc-event:has(.game-event) .fc-event-resizer *,
+.fc-event-resizer,
+.fc-event-resizer-start,
+.fc-event-resizer-end {
+  pointer-events: auto !important;
+  cursor: ew-resize !important;
+  z-index: 9999 !important;
+}
+
+.fc-event:has(.game-event) .fc-event-resizer-start {
+  left: 0 !important;
+}
+
+.fc-event:has(.game-event) .fc-event-resizer-end {
+  right: 0 !important;
+}
