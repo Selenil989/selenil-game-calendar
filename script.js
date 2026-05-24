@@ -5427,11 +5427,111 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 
+
+
+  // =========================
+  // 안정1 클릭 보정: 캘린더 루트 위임 클릭
+  // - 내부 이미지/그라데이션/하위 배너 레이어가 클릭을 가로채도
+  //   실제 좌표 아래의 메인 배너를 찾아 상세창을 엽니다.
+  // - 드래그 이동 / 리사이즈 / 편집 UI / 모달 동작은 기존 기능을 보존합니다.
+  // =========================
+
+  function setupMainBannerDelegatedClick() {
+
+    if (!calendarEl || calendarEl.dataset.mainClickDelegated === "true") {
+      return;
+    }
+
+    calendarEl.dataset.mainClickDelegated =
+      "true";
+
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let pointerStartedOnResize = false;
+
+    calendarEl.addEventListener(
+      "pointerdown",
+      (e) => {
+        pointerStartX = e.clientX;
+        pointerStartY = e.clientY;
+        pointerStartedOnResize = Boolean(
+          e.target.closest(".fc-event-resizer")
+        );
+      },
+      true
+    );
+
+    calendarEl.addEventListener(
+      "click",
+      (e) => {
+
+        if (isEditingMainEvent) return;
+        if (pointerStartedOnResize) return;
+
+        // FullCalendar 드래그 이동 / 길이 조절 직후 발생하는 클릭은 상세창을 열지 않습니다.
+        const moveDistance =
+          Math.hypot(
+            e.clientX - pointerStartX,
+            e.clientY - pointerStartY
+          );
+
+        if (moveDistance > 6) return;
+
+        // 편집 UI, 버튼, 입력창, 리사이즈 핸들은 기존 동작을 우선합니다.
+        if (
+          e.target.closest(
+            "button, input, textarea, select, label, .fc-event-resizer, .modal"
+          )
+        ) {
+          return;
+        }
+
+        const pointElements =
+          typeof document.elementsFromPoint === "function"
+            ? document.elementsFromPoint(e.clientX, e.clientY)
+            : [];
+
+        const gameEvent =
+          e.target.closest?.(".game-event") ||
+          pointElements
+            .map(element => element.closest?.(".game-event"))
+            .find(Boolean) ||
+          pointElements
+            .map(element => element.closest?.(".fc-event"))
+            .find(element => element?.querySelector?.(".game-event"))
+            ?.querySelector(".game-event");
+
+        if (!gameEvent) return;
+
+        const mainEventId =
+          gameEvent.dataset.mainEventId || "";
+
+        if (!mainEventId) return;
+
+        const mainEvent =
+          calendar?.getEventById(mainEventId);
+
+        if (!mainEvent) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        openDetailModal(mainEvent);
+
+      },
+      true
+    );
+
+  }
+
   // =========================
   // 캘린더 표시
   // =========================
 
   calendar.render();
+
+  setupMainBannerDelegatedClick();
 
 
 
