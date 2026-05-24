@@ -3910,7 +3910,7 @@ body {
     box-shadow 0.16s,
     opacity 0.16s;
 }
- =========================
+/* =========================
    기본 화면
 ========================= */
 
@@ -7917,19 +7917,73 @@ body {
 }
 
 
+
 /* =========================
-   안정 버전 보정: 메인 배너 클릭 영역 복구
-   - 서브 배너 레이어의 빈 공간이 메인 배너 클릭을 가로막지 않도록 처리
-   - 실제 서브 배너는 hover/클릭 이벤트를 유지하고, 이벤트는 메인 배너로 버블링됨
+   안정 버전 보정: 메인 배너 전체 클릭 영역 통일
+   - 텍스트 영역과 같은 방식으로 메인 배너 전체가 클릭 대상이 되도록 정리합니다.
+   - 서브 배너/초과 뱃지 레이어는 화면에만 보이고 클릭은 부모 메인 배너로 통과시킵니다.
+   - FullCalendar의 드래그 이동 / 일정 길이 조절 기능은 건드리지 않습니다.
 ========================= */
-.calendar-sub-contained-layer {
-  pointer-events: none !important;
+.fc-daygrid-event,
+.fc-event,
+.fc-event-main,
+.fc-event-main-frame {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-.calendar-sub-contained-layer .calendar-sub-event {
+.game-event {
+  cursor: pointer !important;
   pointer-events: auto !important;
 }
 
+.game-event .overlay,
+.game-event .event-image-zone,
+.game-event .no-image-fill {
+  pointer-events: none !important;
+}
+
+.game-event::before {
+  pointer-events: none !important;
+}
+
+.calendar-sub-contained-layer,
+.calendar-sub-contained-layer *,
+.calendar-sub-contained-layer .calendar-sub-event,
 .calendar-sub-contained-layer .calendar-sub-more-badge {
   pointer-events: none !important;
+}
+
+/* =========================
+   안정1 클릭 패치: 메인 배너 클릭 영역 복구
+   - 메인 배너 자체는 클릭 가능하게 되돌립니다.
+   - 이미지 / 그라데이션 / 텍스트 오버레이 같은 장식 레이어만 클릭을 가로채지 않게 합니다.
+   - 서브 배너, 뱃지, 드래그 정렬, 일정 이동/길이 조절 규칙은 수정하지 않습니다.
+========================= */
+.fc-event:has(.game-event),
+.fc-event:has(.game-event) .fc-event-main,
+.fc-event:has(.game-event) .fc-event-main-frame,
+.fc-event:has(.game-event) .fc-event-title-container {
+  cursor: pointer !important;
+}
+
+.fc-event:has(.game-event) .game-event {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.fc-event:has(.game-event) .game-event::before,
+.fc-event:has(.game-event) .game-event::after,
+.fc-event:has(.game-event) .event-image-zone,
+.fc-event:has(.game-event) .event-image-zone img,
+.fc-event:has(.game-event) .no-image-fill,
+.fc-event:has(.game-event) .overlay {
+  pointer-events: none !important;
+}
+
+.fc-event-resizer,
+.fc-event-resizer * {
+  pointer-events: auto !important;
+  cursor: ew-resize !important;
 }

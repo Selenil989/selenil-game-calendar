@@ -669,6 +669,99 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   setupRangeNumberInputs();
 
+  // =========================
+  // 편집 패널 range 조작 중 페이지 스크롤 튐 방지
+  // - 서브 배너 이미지 슬라이더 조작 시 브라우저가 포커스 위치로 스크롤을 이동시키는 경우가 있어
+  //   현재 창/모달 스크롤 위치를 즉시 복구합니다.
+  // =========================
+
+  function setupRangeScrollGuard() {
+
+    const rangeInputs =
+      Array.from(
+        document.querySelectorAll('input[type="range"]')
+      );
+
+    rangeInputs.forEach(rangeInput => {
+
+      if (!rangeInput || rangeInput.dataset.scrollGuardReady === "true") {
+        return;
+      }
+
+      rangeInput.dataset.scrollGuardReady =
+        "true";
+
+      let savedWindowX = 0;
+      let savedWindowY = 0;
+      let savedModal = null;
+      let savedModalScrollTop = 0;
+
+      const saveScrollPosition = () => {
+
+        savedWindowX =
+          window.scrollX || window.pageXOffset || 0;
+
+        savedWindowY =
+          window.scrollY || window.pageYOffset || 0;
+
+        savedModal =
+          rangeInput.closest(".modal-content");
+
+        savedModalScrollTop =
+          savedModal?.scrollTop || 0;
+
+      };
+
+      const restoreScrollPosition = () => {
+
+        requestAnimationFrame(() => {
+
+          window.scrollTo(savedWindowX, savedWindowY);
+
+          if (savedModal) {
+            savedModal.scrollTop = savedModalScrollTop;
+          }
+
+          requestAnimationFrame(() => {
+            window.scrollTo(savedWindowX, savedWindowY);
+
+            if (savedModal) {
+              savedModal.scrollTop = savedModalScrollTop;
+            }
+          });
+
+        });
+
+      };
+
+      ["pointerdown", "mousedown", "touchstart", "focus"].forEach(eventName => {
+        rangeInput.addEventListener(
+          eventName,
+          saveScrollPosition,
+          { passive: true }
+        );
+      });
+
+      rangeInput.addEventListener(
+        "input",
+        () => {
+          // 슬라이더 input 이벤트가 발생한 뒤에는 이미 브라우저가 스크롤을 튕겼을 수 있으므로,
+          // 여기서 위치를 다시 저장하지 않고 pointerdown/focus 시점에 저장한 위치로만 복구합니다.
+          restoreScrollPosition();
+        }
+      );
+
+      rangeInput.addEventListener(
+        "change",
+        restoreScrollPosition
+      );
+
+    });
+
+  }
+
+  setupRangeScrollGuard();
+
   [
     eventTextColor,
     eventTextBgColor,
@@ -4344,6 +4437,40 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 메인 배너 안 하위 이벤트 이미지 DOM 직접 갱신
+  // =========================
+
+  function updateVisibleMainSubCalendarImages(subEventId, posX, posY, zoom) {
+
+    if (!subEventId) return;
+
+    const targetImages =
+      Array.from(
+        document.querySelectorAll(
+          ".calendar-sub-event-contained .calendar-sub-image-zone img"
+        )
+      )
+        .filter(img => {
+          const subBanner =
+            img.closest(".calendar-sub-event-contained");
+
+          return subBanner?.dataset.subEventId === subEventId;
+        });
+
+    targetImages.forEach(img => {
+      img.style.objectPosition =
+        `${posX}% ${posY}%`;
+
+      img.style.transform =
+        `scale(${Number(zoom) / 100})`;
+
+      img.style.transformOrigin =
+        `${posX}% ${posY}%`;
+    });
+
+  }
+
+  // =========================
   // 메인 편집창에서 선택한 하위 이벤트 배너 이미지 실시간 반영
   // =========================
 
@@ -4406,11 +4533,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       });
 
-    // 하위 배너 이미지 슬라이더는 캘린더를 다시 그리지만,
-    // 사용자가 보던 페이지 위치는 유지해야 합니다.
-    runWithPageScrollRestored(() => {
-      applySearchFilter();
-    });
+    // 하위 배너 이미지 슬라이더 조작 중에는 캘린더 전체를 재렌더링하지 않습니다.
+    // 전체 재렌더링을 하면 브라우저가 FullCalendar에 포커스를 다시 맞추며
+    // 페이지가 최상단으로 튀는 경우가 있어, 현재 보이는 이미지 DOM만 즉시 갱신합니다.
+    updateVisibleMainSubCalendarImages(
+      selectedSubEvent.id,
+      selectedSubEvent.calendar_image_pos_x,
+      selectedSubEvent.calendar_image_pos_y,
+      selectedSubEvent.calendar_image_zoom
+    );
 
   }
 
@@ -5239,42 +5370,56 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
         // =========================
-        // 클릭 = 상세 보기
-        // - 서브 배너가 메인 배너 안에 올라와 있어도 클릭은 항상 상세창으로 연결
-        // - capture 단계에서 처리해서 내부 레이어가 클릭을 가로막는 상황을 방지
+        // 메인 이벤트 클릭 = 상세 보기
+        // - 클릭 판정은 내부 텍스트/이미지/그라데이션이 아니라 FullCalendar 이벤트 요소(info.el) 하나로 통일합니다.
+        // - 내부 레이어가 클릭을 가로채지 않게 CSS에서 pointer-events를 정리하고, 여기서는 실제 이동이 없는 클릭만 처리합니다.
+        // - 드래그 이동 / 일정 길이 조절은 FullCalendar 기본 동작을 유지해야 하므로, 마우스 이동이 있거나 리사이즈 핸들을 누른 경우에는 상세창을 열지 않습니다.
         // =========================
 
-        const openDetailFromCalendarClick = (e) => {
+        if (info.event.extendedProps.displayType !== "inlineSub") {
 
-          if (isEditingMainEvent) return;
+          let clickStartX = 0;
+          let clickStartY = 0;
+          let isResizeHandleClick = false;
 
-          /* 같은 클릭이 중복 처리되지 않도록 방지 */
-          if (e?.defaultPrevented) return;
-
-          const detailEvent =
-            info.event.extendedProps.displayType === "inlineSub"
-              ? (
-                calendar.getEventById(
-                  info.event.extendedProps.parentEventId
-                ) || info.event.extendedProps.parentEvent
-              )
-              : info.event;
-
-          if (!detailEvent) return;
-
-          e?.preventDefault?.();
-
-          openDetailModal(
-            detailEvent
+          info.el.addEventListener(
+            "pointerdown",
+            (e) => {
+              clickStartX = e.clientX;
+              clickStartY = e.clientY;
+              isResizeHandleClick = Boolean(
+                e.target.closest(".fc-event-resizer")
+              );
+            }
           );
 
-        };
+          info.el.addEventListener(
+            "click",
+            (e) => {
 
-        info.el.addEventListener(
-          "click",
-          openDetailFromCalendarClick,
-          true
-        );
+              if (isEditingMainEvent) return;
+
+              if (isResizeHandleClick) return;
+
+              const moveDistance =
+                Math.hypot(
+                  e.clientX - clickStartX,
+                  e.clientY - clickStartY
+                );
+
+              if (moveDistance > 6) return;
+
+              e.preventDefault();
+              e.stopPropagation();
+
+              openDetailModal(
+                info.event
+              );
+
+            }
+          );
+
+        }
 
       },
 
