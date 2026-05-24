@@ -1327,6 +1327,33 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   }
 
+  function applyHeroCountClass(count) {
+
+    if (!calendarHeroList) return;
+
+    calendarHeroList.classList.remove(
+      "hero-count-0",
+      "hero-count-1",
+      "hero-count-2",
+      "hero-count-3",
+      "hero-count-4",
+      "hero-count-5"
+    );
+
+    const safeCount =
+      Math.min(5, Math.max(0, Number(count) || 0));
+
+    calendarHeroList.classList.add(
+      `hero-count-${safeCount}`
+    );
+
+    calendarHeroList.style.setProperty(
+      "--hero-count",
+      String(Math.max(1, safeCount))
+    );
+
+  }
+
   function renderHeroSelect() {
 
     if (!calendarHeroSelect) return;
@@ -1626,9 +1653,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     calendarHeroList.innerHTML = "";
 
-    editingHeroItems
-      .filter(item => item?.image)
-      .slice(0, 5)
+    const items =
+      editingHeroItems
+        .filter(item => item?.image)
+        .slice(0, 5);
+
+    applyHeroCountClass(items.length);
+
+    items
       .forEach(item => {
 
         const heroItem =
@@ -1979,6 +2011,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         .slice(0, 5);
 
     calendarHeroList.innerHTML = "";
+
+    applyHeroCountClass(items.length);
 
     items.forEach(item => {
 

@@ -1504,17 +1504,21 @@ body {
   display: flex;
   justify-content: center;
   align-items: stretch;
-  flex-wrap: wrap;
-  gap: 14px;
+  flex-wrap: nowrap;
+  flex: 1;
+  gap: 16px;
 
-  margin: 12px 0 20px;
+  padding: 0 20px;
+  min-width: 0;
+
+  margin: 0;
 }
 
 .calendar-hero-item {
   position: relative;
 
-  width: min(220px, 100%);
-  height: 110px;
+ width: min(320px, 100%);
+  height: 150px;
 
   overflow: hidden;
 
@@ -3278,27 +3282,375 @@ body {
     z-index: auto !important;
   }
 
-  .sticky-top-panel .calendar-hero-list {
+  .sticky-top-panel .top-bar {
     display: flex !important;
-    flex-wrap: wrap !important;
-    flex-direction: row !important;
-    justify-content: center !important;
-
+    flex-direction: column !important;
+    align-items: stretch !important;
     gap: 10px !important;
+  }
 
-    overflow-x: visible !important;
-    overflow-y: visible !important;
+  .sticky-top-panel .site-title-row {
+    width: 100% !important;
+  }
 
+  .sticky-top-panel .site-title-row h1 {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .sticky-top-panel .top-buttons {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    overflow: visible !important;
     padding-bottom: 0 !important;
   }
 
   .sticky-top-panel .calendar-hero-item {
-    flex: 0 0 calc(50% - 5px) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 78px !important;
+  }
+}
 
-    width: calc(50% - 5px) !important;
-    min-width: 140px !important;
-    max-width: 220px !important;
+@media (max-width: 768px) {
+  .sticky-top-panel .calendar-hero-list:has(.calendar-hero-item:nth-child(5)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
 
-    height: 80px !important;
+  .sticky-top-panel .calendar-hero-list:has(.calendar-hero-item:nth-child(5)) .calendar-hero-item {
+    height: 64px !important;
+  }
+}
+
+
+
+/* 상단 레이아웃 재구성 */
+.sticky-top-panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.sticky-top-panel .top-bar {
+  display: contents !important;
+}
+
+.sticky-top-panel .site-title-row {
+  grid-column: 1;
+}
+
+.sticky-top-panel .calendar-hero-list {
+  grid-column: 2;
+
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.sticky-top-panel .top-buttons {
+  grid-column: 3;
+}
+
+#logoutBtn {
+  white-space: nowrap;
+}
+
+/* 검색줄 */
+.search-box {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+}
+
+/* 일정추가 버튼 스타일 */
+#addEventBtn {
+  background: #4f46e5;
+  color: white;
+}
+
+#addEventBtn:hover {
+  background: #6366f1;
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .sticky-top-panel {
+    display: block;
+  }
+
+  .sticky-top-panel .top-bar {
+    display: flex !important;
+  }
+
+  .search-box {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================
+   이번 수정 9차: 상단 이미지 위치 / 개수별 자동 크기 최종 정리
+   - PC: [캘린더 이름] [상단 이미지들] [로그인/로그아웃]
+   - 관리자 상태는 그 아래 줄
+   - 모바일: sticky 해제, 이미지 2줄 정렬, 5개일 때 3열 축소
+========================= */
+
+.sticky-top-panel {
+  display: block !important;
+}
+
+.sticky-top-panel .top-bar {
+  display: grid !important;
+  grid-template-columns: minmax(180px, auto) minmax(0, 1fr) auto;
+  align-items: center !important;
+  gap: 14px !important;
+  margin-bottom: 8px !important;
+}
+
+.sticky-top-panel .site-title-row {
+  grid-column: 1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+.sticky-top-panel .site-title-row h1 {
+  max-width: 340px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.sticky-top-panel .calendar-hero-list {
+  grid-column: 2 !important;
+  display: grid !important;
+  grid-template-columns: repeat(var(--hero-count, 1), minmax(0, 1fr)) !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+.sticky-top-panel .calendar-hero-list:empty {
+  display: none !important;
+}
+
+.sticky-top-panel .calendar-hero-item {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: clamp(66px, 6.8vw, 104px) !important;
+}
+
+.sticky-top-panel .calendar-hero-list.hero-count-1 {
+  max-width: 260px !important;
+}
+
+.sticky-top-panel .calendar-hero-list.hero-count-2 {
+  max-width: 440px !important;
+}
+
+.sticky-top-panel .calendar-hero-list.hero-count-3 {
+  max-width: 620px !important;
+}
+
+.sticky-top-panel .calendar-hero-list.hero-count-4,
+.sticky-top-panel .calendar-hero-list.hero-count-5 {
+  max-width: 760px !important;
+}
+
+.sticky-top-panel .calendar-hero-list.hero-count-4 .calendar-hero-item,
+.sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+  height: clamp(58px, 5.8vw, 88px) !important;
+}
+
+.sticky-top-panel .top-buttons {
+  grid-column: 3 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  width: auto !important;
+  gap: 8px !important;
+}
+
+.sticky-top-panel .top-buttons button {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+
+.sticky-top-panel .login-status {
+  margin: 0 0 14px !important;
+}
+
+@media (max-width: 1024px) {
+  .sticky-top-panel .top-bar {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+
+  .sticky-top-panel .site-title-row {
+    grid-column: 1 !important;
+  }
+
+  .sticky-top-panel .top-buttons {
+    grid-column: 2 !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sticky-top-panel {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    margin: -10px -10px 14px !important;
+    padding: 12px 10px 12px !important;
+  }
+
+  .sticky-top-panel .top-bar {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .sticky-top-panel .site-title-row,
+  .sticky-top-panel .calendar-hero-list,
+  .sticky-top-panel .top-buttons {
+    grid-column: 1 !important;
+  }
+
+  .sticky-top-panel .site-title-row h1 {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    font-size: 22px !important;
+  }
+
+  .sticky-top-panel .top-buttons {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    width: 100% !important;
+  }
+
+  .sticky-top-panel .top-buttons button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-item {
+    height: 78px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+    height: 64px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .sticky-top-panel .top-buttons {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sticky-top-panel .site-title-row h1 {
+    font-size: 20px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-item {
+    height: 68px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+    height: 56px !important;
+  }
+}
+
+
+/* =========================
+   이번 수정 10차: PC 상단 이미지 확대 최종 오버라이드
+   - 캘린더 이름과 로그인/로그아웃 버튼 사이 공간을 더 적극적으로 사용
+   - 모바일 기존 2열 / 5개 3열 규칙은 유지
+========================= */
+
+@media (min-width: 1025px) {
+  .sticky-top-panel .top-bar {
+    grid-template-columns: minmax(180px, auto) minmax(0, 1fr) auto !important;
+    gap: 18px !important;
+  }
+
+  .sticky-top-panel .site-title-row h1 {
+    max-width: 300px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 14px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-item {
+    height: clamp(94px, 8.6vw, 138px) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-1 {
+    max-width: min(520px, 100%) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-2 {
+    max-width: min(760px, 100%) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-3 {
+    max-width: min(920px, 100%) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-4,
+  .sticky-top-panel .calendar-hero-list.hero-count-5 {
+    max-width: min(1000px, 100%) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-4 .calendar-hero-item,
+  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+    height: clamp(82px, 7.2vw, 116px) !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sticky-top-panel .calendar-hero-item {
+    height: clamp(86px, 10vw, 118px) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-4 .calendar-hero-item,
+  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+    height: clamp(76px, 8.5vw, 104px) !important;
   }
 }

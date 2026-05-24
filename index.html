@@ -35,6 +35,9 @@
         </button>
       </div>
 
+      <!-- 캘린더 상단 이미지 영역 -->
+      <div id="calendarHeroList" class="calendar-hero-list"></div>
+
       <!-- 로그인 / 로그아웃 / 일정 추가 버튼 -->
       <div class="top-buttons">
 
@@ -46,9 +49,6 @@
           로그아웃
         </button>
 
-        <button id="addEventBtn" class="hidden">
-          + 일정 추가
-        </button>
 
       </div>
     </div>
@@ -58,20 +58,19 @@
       방문자 모드
     </div>
 
-    <!-- 캘린더 상단 이미지 영역 -->
-    <div id="calendarHeroList" class="calendar-hero-list"></div>
-
     </div>
 
     <!-- 일정 검색 영역 -->
     <div class="search-box">
+  <input type="text" id="searchInput" placeholder="일정 검색..." />
 
-      <input type="text" id="searchInput" placeholder="일정 검색..." />
+  <button id="clearSearchBtn">
+    초기화
+  </button>
 
-      <button id="clearSearchBtn">
-        초기화
-      </button>
-
+  <button id="addEventBtn" class="hidden">
+    + 일정 추가
+  </button>
     </div>
 
     <!-- 캘린더 영역 -->
