@@ -850,6 +850,367 @@ document.addEventListener("DOMContentLoaded", async function () {
   let currentMainSubCalendarSubId = "";
 
   // =========================
+  // 하위 이벤트 표시 순서 / 드래그 정렬
+  // =========================
+
+  let draggedSubEventId = "";
+
+  let isSubEventDragging = false;
+
+  function getSubEventOrderStorageKey(eventId) {
+    return `subEventOrder:${eventId || "unknown"}`;
+  }
+
+  function readLocalSubEventOrder(eventId) {
+
+    try {
+      const savedOrder =
+        localStorage.getItem(
+          getSubEventOrderStorageKey(eventId)
+        );
+
+      return savedOrder
+        ? JSON.parse(savedOrder)
+        : [];
+
+    } catch (error) {
+      console.warn("하위 이벤트 로컬 순서 읽기 실패", error);
+      return [];
+    }
+
+  }
+
+  function writeLocalSubEventOrder(eventId, subEvents = []) {
+
+    try {
+      localStorage.setItem(
+        getSubEventOrderStorageKey(eventId),
+        JSON.stringify(
+          subEvents
+            .map(subEvent => subEvent.id)
+            .filter(Boolean)
+        )
+      );
+    } catch (error) {
+      console.warn("하위 이벤트 로컬 순서 저장 실패", error);
+    }
+
+  }
+
+  function sortSubEventsByDisplayOrder(subEvents = [], eventId = "") {
+
+    const localOrder =
+      readLocalSubEventOrder(eventId);
+
+    const localOrderMap =
+      new Map(
+        localOrder.map((id, index) => [id, index])
+      );
+
+    return [...subEvents].sort((a, b) => {
+
+      const aOrder =
+        Number.isFinite(Number(a.display_order))
+          ? Number(a.display_order)
+          : localOrderMap.has(a.id)
+            ? localOrderMap.get(a.id)
+            : Number.POSITIVE_INFINITY;
+
+      const bOrder =
+        Number.isFinite(Number(b.display_order))
+          ? Number(b.display_order)
+          : localOrderMap.has(b.id)
+            ? localOrderMap.get(b.id)
+            : Number.POSITIVE_INFINITY;
+
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+
+      const startDiff =
+        getDateTimeValue(a.start_date || "") -
+        getDateTimeValue(b.start_date || "");
+
+      if (startDiff !== 0) {
+        return startDiff;
+      }
+
+      return String(a.id || "").localeCompare(String(b.id || ""));
+
+    });
+
+  }
+
+  function applyCurrentSubEventOrderToCalendar() {
+
+    if (!currentDetailEvent) return;
+
+    const parentEventId =
+      currentDetailEvent.id;
+
+    allMainEvents =
+      allMainEvents.map(event => {
+
+        if (event.id !== parentEventId) {
+          return event;
+        }
+
+        return {
+          ...event,
+
+          extendedProps: {
+            ...event.extendedProps,
+            subEvents: currentSubEvents,
+          },
+        };
+
+      });
+
+    if (typeof currentDetailEvent.setExtendedProp === "function") {
+      currentDetailEvent.setExtendedProp(
+        "subEvents",
+        currentSubEvents
+      );
+    } else if (currentDetailEvent.extendedProps) {
+      currentDetailEvent.extendedProps.subEvents =
+        currentSubEvents;
+    }
+
+    applySearchFilter();
+
+  }
+
+  async function persistCurrentSubEventOrder() {
+
+    if (!currentDetailEvent) return;
+
+    const parentEventId =
+      currentDetailEvent.id;
+
+    currentSubEvents =
+      currentSubEvents.map((subEvent, index) => ({
+        ...subEvent,
+        display_order: index,
+      }));
+
+    writeLocalSubEventOrder(
+      parentEventId,
+      currentSubEvents
+    );
+
+    applyCurrentSubEventOrderToCalendar();
+
+    try {
+      const updateResults =
+        await Promise.all(
+          currentSubEvents.map((subEvent, index) => {
+            return supabaseClient
+              .from("sub_events")
+              .update({
+                display_order: index,
+              })
+              .eq("id", subEvent.id);
+          })
+        );
+
+      const firstError =
+        updateResults.find(result => result.error)?.error;
+
+      if (firstError) {
+        console.warn(
+          "하위 이벤트 DB 순서 저장 실패. display_order 컬럼이 없으면 로컬 순서만 적용됩니다.",
+          firstError
+        );
+      }
+
+    } catch (error) {
+      console.warn(
+        "하위 이벤트 DB 순서 저장 실패. 로컬 순서만 적용됩니다.",
+        error
+      );
+    }
+
+  }
+
+  function getDragAfterSubEventCard(container, y) {
+
+    const draggableCards =
+      Array.from(
+        container.querySelectorAll(
+          ".sub-event-card[draggable='true']:not(.dragging)"
+        )
+      );
+
+    return draggableCards.reduce((closest, child) => {
+
+      const box =
+        child.getBoundingClientRect();
+
+      const offset =
+        y - box.top - box.height / 2;
+
+      if (offset < 0 && offset > closest.offset) {
+        return {
+          offset,
+          element: child,
+        };
+      }
+
+      return closest;
+
+    }, {
+      offset: Number.NEGATIVE_INFINITY,
+      element: null,
+    }).element;
+
+  }
+
+  function setupSubEventDragAndDrop() {
+
+    if (!subEventList || subEventList.dataset.dragReady === "true") {
+      return;
+    }
+
+    subEventList.dataset.dragReady =
+      "true";
+
+    subEventList.addEventListener(
+      "dragstart",
+      (e) => {
+
+        if (!isAdmin) return;
+
+        const card =
+          e.target.closest(".sub-event-card");
+
+        if (!card) return;
+
+        draggedSubEventId =
+          card.dataset.subEventId || "";
+
+        isSubEventDragging = true;
+
+        card.classList.add("dragging");
+        subEventList.classList.add("drag-active");
+
+        e.dataTransfer.effectAllowed =
+          "move";
+
+        e.dataTransfer.setData(
+          "text/plain",
+          draggedSubEventId
+        );
+
+      }
+    );
+
+    subEventList.addEventListener(
+      "dragover",
+      (e) => {
+
+        if (!isAdmin || !draggedSubEventId) return;
+
+        e.preventDefault();
+
+        const draggingCard =
+          subEventList.querySelector(".sub-event-card.dragging");
+
+        if (!draggingCard) return;
+
+        const afterElement =
+          getDragAfterSubEventCard(
+            subEventList,
+            e.clientY
+          );
+
+        if (!afterElement) {
+          subEventList.appendChild(draggingCard);
+        } else {
+          subEventList.insertBefore(
+            draggingCard,
+            afterElement
+          );
+        }
+
+      }
+    );
+
+    subEventList.addEventListener(
+      "drop",
+      async (e) => {
+
+        if (!isAdmin || !draggedSubEventId) return;
+
+        e.preventDefault();
+
+        const orderedIds =
+          Array.from(
+            subEventList.querySelectorAll(".sub-event-card")
+          )
+            .map(card => card.dataset.subEventId)
+            .filter(Boolean);
+
+        const previousSubEvents =
+          Array.isArray(currentSubEvents)
+            ? [...currentSubEvents]
+            : [];
+
+        const subEventMap =
+          new Map(
+            previousSubEvents
+              .filter(subEvent => subEvent?.id)
+              .map(subEvent => [subEvent.id, subEvent])
+          );
+
+        const orderedSubEvents =
+          orderedIds
+            .map(id => subEventMap.get(id))
+            .filter(Boolean);
+
+        const missingSubEvents =
+          previousSubEvents
+            .filter(subEvent => {
+              return subEvent?.id && !orderedIds.includes(subEvent.id);
+            });
+
+        currentSubEvents =
+          [
+            ...orderedSubEvents,
+            ...missingSubEvents,
+          ];
+
+        await persistCurrentSubEventOrder();
+
+        showToast("하위 이벤트 순서 저장 완료");
+
+      }
+    );
+
+    subEventList.addEventListener(
+      "dragend",
+      () => {
+
+        draggedSubEventId =
+          "";
+
+        isSubEventDragging = false;
+
+        subEventList
+          .querySelectorAll(".sub-event-card.dragging")
+          .forEach(card => {
+            card.classList.remove("dragging");
+          });
+
+        subEventList.classList.remove("drag-active");
+
+      }
+    );
+
+  }
+
+  setupSubEventDragAndDrop();
+
+  // =========================
   // 메인 이벤트 실시간 편집 상태
   // =========================
 
@@ -2497,7 +2858,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     }
 
-    return data || [];
+    return sortSubEventsByDisplayOrder(
+      data || [],
+      eventId
+    );
 
   }
 
@@ -2985,6 +3349,45 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // 페이지 스크롤 위치 보존 유틸
+  // =========================
+
+  function runWithPageScrollRestored(callback) {
+
+    const scrollX =
+      window.scrollX || window.pageXOffset || 0;
+
+    const scrollY =
+      window.scrollY || window.pageYOffset || 0;
+
+    const activeElement =
+      document.activeElement;
+
+    callback();
+
+    // 캘린더 재렌더링 후 브라우저가 포커스를 맞추며
+    // 페이지를 최상단으로 올리는 현상을 막기 위해 스크롤을 복구합니다.
+    requestAnimationFrame(() => {
+
+      try {
+        activeElement?.focus?.({ preventScroll: true });
+      } catch (error) {
+        // 일부 브라우저는 preventScroll 옵션을 지원하지 않을 수 있습니다.
+      }
+
+      window.scrollTo(scrollX, scrollY);
+
+      requestAnimationFrame(() => {
+        window.scrollTo(scrollX, scrollY);
+      });
+
+    });
+
+  }
+
+
+
+  // =========================
   // 검색 적용
   // =========================
 
@@ -3068,6 +3471,235 @@ document.addEventListener("DOMContentLoaded", async function () {
   // DB의 메인/하위 이벤트는 그대로 두고 화면 표시만 분리
   // =========================
 
+  function getDateTimeValue(dateText) {
+
+    const date =
+      parseLocalDate(dateText);
+
+    return date
+      ? date.getTime()
+      : 0;
+
+  }
+
+  function getSubEventStartDate(subEvent, fallbackStart) {
+
+    return subEvent.start_date || fallbackStart || "";
+
+  }
+
+  function getSubEventEndDate(subEvent) {
+
+    return subEvent.end_date || subEvent.start_date || "";
+
+  }
+
+  function getInclusiveDateDuration(startDate, endDate) {
+
+    const start =
+      parseLocalDate(startDate);
+
+    const end =
+      parseLocalDate(endDate || startDate);
+
+    if (!start || !end) {
+      return 1;
+    }
+
+    const oneDay =
+      24 * 60 * 60 * 1000;
+
+    return Math.max(
+      1,
+      Math.round((end.getTime() - start.getTime()) / oneDay) + 1
+    );
+
+  }
+
+
+
+  // =========================
+  // 캘린더 배너 이미지 고정 규칙
+  // 1~2일: 이미지 100%, 대표색/그라데이션 제거
+  // 3일 이상: 이미지는 항상 2일 칸 폭, 블렌딩은 2일~3일 사이 고정
+  // =========================
+
+  function getCalendarDayCellWidthFromElement(eventElement) {
+
+    const row =
+      eventElement?.closest(".fc-daygrid-body tr") ||
+      eventElement?.closest(".fc-scrollgrid-sync-table tr") ||
+      eventElement?.closest("tr");
+
+    const dayCell =
+      row?.querySelector(".fc-daygrid-day[data-date]");
+
+    const dayCellWidth =
+      dayCell?.getBoundingClientRect().width;
+
+    return dayCellWidth && dayCellWidth > 0
+      ? dayCellWidth
+      : 0;
+
+  }
+
+  function applyFixedDayImageRuleToBanner(
+    bannerElement,
+    durationDays,
+    dayCellWidth = 0
+  ) {
+
+    if (!bannerElement) return;
+
+    const safeDuration =
+      Math.max(1, Number(durationDays) || 1);
+
+    bannerElement.classList.remove(
+      "calendar-banner-image-only",
+      "calendar-banner-fixed-3plus"
+    );
+
+    if (safeDuration <= 2) {
+
+      bannerElement.classList.add(
+        "calendar-banner-image-only"
+      );
+
+      bannerElement.style.setProperty(
+        "--banner-image-px",
+        "100%"
+      );
+
+      bannerElement.style.setProperty(
+        "--banner-blend-px",
+        "0px"
+      );
+
+      return;
+
+    }
+
+    const fallbackWidth =
+      bannerElement.getBoundingClientRect().width / safeDuration;
+
+    const oneDayWidth =
+      dayCellWidth || fallbackWidth || 0;
+
+    const imageWidth =
+      Math.max(1, oneDayWidth * 2);
+
+    const blendWidth =
+      Math.max(1, oneDayWidth);
+
+    bannerElement.classList.add(
+      "calendar-banner-fixed-3plus"
+    );
+
+    bannerElement.style.setProperty(
+      "--banner-image-px",
+      `${imageWidth}px`
+    );
+
+    bannerElement.style.setProperty(
+      "--banner-blend-px",
+      `${blendWidth}px`
+    );
+
+  }
+
+
+  function rangesOverlapInclusive(aStart, aEnd, bStart, bEnd) {
+
+    const aStartTime =
+      getDateTimeValue(aStart);
+
+    const aEndTime =
+      getDateTimeValue(aEnd || aStart);
+
+    const bStartTime =
+      getDateTimeValue(bStart);
+
+    const bEndTime =
+      getDateTimeValue(bEnd || bStart);
+
+    return aStartTime <= bEndTime && bStartTime <= aEndTime;
+
+  }
+
+  function buildSubEventLayoutMeta(subEvents = [], fallbackStart = "") {
+
+    const validSubEvents =
+      subEvents
+        .filter(subEvent => subEvent?.start_date || subEvent?.end_date)
+        .map((subEvent, originalIndex) => {
+
+          const start =
+            getSubEventStartDate(subEvent, fallbackStart);
+
+          const end =
+            getSubEventEndDate(subEvent);
+
+          return {
+            subEvent,
+            originalIndex,
+            start,
+            end,
+          };
+
+        })
+        .sort((a, b) => {
+
+          const startDiff =
+            getDateTimeValue(a.start) - getDateTimeValue(b.start);
+
+          if (startDiff !== 0) {
+            return startDiff;
+          }
+
+          return a.originalIndex - b.originalIndex;
+
+        });
+
+    const metaById =
+      new Map();
+
+    validSubEvents.forEach((item, sortedIndex) => {
+
+      const previousOverlaps =
+        validSubEvents
+          .slice(0, sortedIndex)
+          .filter(previous => {
+
+            return rangesOverlapInclusive(
+              item.start,
+              item.end,
+              previous.start,
+              previous.end
+            );
+
+          });
+
+      const hasEarlierStartOverlap =
+        previousOverlaps.some(previous => {
+          return getDateTimeValue(previous.start) < getDateTimeValue(item.start);
+        });
+
+      metaById.set(
+        item.subEvent.id,
+        {
+          overlapsEarlier: previousOverlaps.length > 0,
+          shiftHalfDay: hasEarlierStartOverlap,
+          overlapLevel: previousOverlaps.length,
+          durationDays: getInclusiveDateDuration(item.start, item.end),
+        }
+      );
+
+    });
+
+    return metaById;
+
+  }
+
   function createCalendarEvents(mainEvents) {
 
     const displayEvents = [];
@@ -3090,52 +3722,510 @@ document.addEventListener("DOMContentLoaded", async function () {
         },
       });
 
-      const subEvents =
-        mainEvent.extendedProps.subEvents || [];
-
-      subEvents.forEach(subEvent => {
-
-        if (!subEvent.start_date && !subEvent.end_date) {
-          return;
-        }
-
-        displayEvents.push({
-
-          id:
-            `${mainEvent.id}__sub__${subEvent.id}`,
-
-          title:
-            subEvent.title,
-
-          start:
-            subEvent.start_date || mainEvent.start,
-
-          end:
-            addOneDay(subEvent.end_date || subEvent.start_date),
-
-          editable:
-            false,
-
-          extendedProps: {
-            displayType:
-              "inlineSub",
-
-            parentEventId:
-              mainEvent.id,
-
-            parentEvent:
-              mainEvent,
-
-            subEvent,
-          },
-
-        });
-
-      });
-
     });
 
     return displayEvents;
+
+  }
+
+  function clampPercent(value) {
+
+    return Math.min(
+      100,
+      Math.max(0, Number(value) || 0)
+    );
+
+  }
+
+  function getDayOffset(startDate, targetDate) {
+
+    const start =
+      parseLocalDate(startDate);
+
+    const target =
+      parseLocalDate(targetDate);
+
+    if (!start || !target) {
+      return 0;
+    }
+
+    const oneDay =
+      24 * 60 * 60 * 1000;
+
+    return Math.round(
+      (target.getTime() - start.getTime()) / oneDay
+    );
+
+  }
+
+
+  function formatDateForData(dateText) {
+
+    return dateText || "";
+
+  }
+
+  function getDateStringFromTime(timeValue) {
+
+    const date =
+      new Date(timeValue);
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(date.getMonth() + 1).padStart(2, "0");
+
+    const day =
+      String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+
+  }
+
+  function getRowDateRangeFromEventElement(eventElement) {
+
+    const row =
+      eventElement?.closest(".fc-daygrid-body tr") ||
+      eventElement?.closest(".fc-scrollgrid-sync-table tr") ||
+      eventElement?.closest("tr");
+
+    if (!row) return null;
+
+    const dayCells =
+      Array.from(
+        row.querySelectorAll(".fc-daygrid-day[data-date]")
+      );
+
+    if (dayCells.length === 0) return null;
+
+    const dates =
+      dayCells
+        .map(cell => cell.getAttribute("data-date"))
+        .filter(Boolean)
+        .sort();
+
+    if (dates.length === 0) return null;
+
+    return {
+      start: dates[0],
+      end: dates[dates.length - 1],
+    };
+
+  }
+
+  function maxDateText(a, b) {
+
+    if (!a) return b || "";
+    if (!b) return a || "";
+
+    return getDateTimeValue(a) >= getDateTimeValue(b) ? a : b;
+
+  }
+
+  function minDateText(a, b) {
+
+    if (!a) return b || "";
+    if (!b) return a || "";
+
+    return getDateTimeValue(a) <= getDateTimeValue(b) ? a : b;
+
+  }
+
+  function syncContainedSubEventsToSegment(info) {
+
+    const eventElement =
+      info?.el;
+
+    const gameEvent =
+      eventElement?.querySelector(".game-event");
+
+    const layer =
+      gameEvent?.querySelector(".calendar-sub-contained-layer");
+
+    if (!gameEvent || !layer) return;
+
+    const rowRange =
+      getRowDateRangeFromEventElement(eventElement);
+
+    const mainStart =
+      info.event.startStr || "";
+
+    const mainEnd =
+      info.event.extendedProps.rawEnd ||
+      subtractOneDay(info.event.endStr) ||
+      mainStart;
+
+    const segmentStart =
+      maxDateText(mainStart, rowRange?.start || mainStart);
+
+    const segmentEnd =
+      minDateText(mainEnd, rowRange?.end || mainEnd);
+
+    const segmentDurationDays =
+      Math.max(
+        1,
+        getInclusiveDateDuration(segmentStart, segmentEnd)
+      );
+
+    const subElements =
+      Array.from(
+        layer.querySelectorAll(".calendar-sub-event-contained")
+      );
+
+    // 모든 하위 배너는 먼저 숨김 처리한 뒤,
+    // 상세창 드래그 순서 기준 표시 후보만 다시 표시합니다.
+    subElements.forEach(element => {
+      element.classList.add("calendar-sub-hidden-in-segment");
+    });
+
+    const sortedByPriority =
+      [...subElements].sort((a, b) => {
+
+        const orderDiff =
+          Number(a.dataset.subDisplayOrder || a.dataset.subOriginalIndex || 0) -
+          Number(b.dataset.subDisplayOrder || b.dataset.subOriginalIndex || 0);
+
+        if (orderDiff !== 0) return orderDiff;
+
+        const startDiff =
+          getDateTimeValue(a.dataset.subStart) -
+          getDateTimeValue(b.dataset.subStart);
+
+        if (startDiff !== 0) return startDiff;
+
+        return Number(a.dataset.subOriginalIndex || 0) -
+          Number(b.dataset.subOriginalIndex || 0);
+
+      });
+
+    // 핵심 규칙:
+    // 각 주/월 조각마다 다시 2개를 뽑지 않고,
+    // 전체 상세창 드래그 우선순위 상위 2개만 메인 배너 표시 후보로 고정합니다.
+    const priorityDisplayIds =
+      new Set(
+        sortedByPriority
+          .slice(0, 2)
+          .map(element => element.dataset.subEventId)
+          .filter(Boolean)
+      );
+
+    const segmentSubElements =
+      sortedByPriority.filter(element => {
+
+        const subStart =
+          element.dataset.subStart || segmentStart;
+
+        const subEnd =
+          element.dataset.subEnd || subStart;
+
+        return rangesOverlapInclusive(
+          segmentStart,
+          segmentEnd,
+          subStart,
+          subEnd
+        );
+
+      });
+
+    const usedSameDateKeys =
+      new Set();
+
+    let displayedCount = 0;
+
+    segmentSubElements.forEach(element => {
+
+      const subId =
+        element.dataset.subEventId || "";
+
+      const subStart =
+        element.dataset.subStart || segmentStart;
+
+      const subEnd =
+        element.dataset.subEnd || subStart;
+
+      const sameDateKey =
+        `${subStart}__${subEnd}`;
+
+      // 동일한 시작일/종료일의 하위 이벤트는 캘린더에서 완전히 겹치므로
+      // 가장 우선순위가 높은 1개만 보여주고 나머지는 +숫자 뱃지로 알립니다.
+      if (usedSameDateKeys.has(sameDateKey)) {
+        return;
+      }
+
+      // 후순위 하위 이벤트가 다른 주/월 조각에서 대신 올라오지 않도록
+      // 상세창 드래그 순서 상위 2개만 표시를 허용합니다.
+      if (!priorityDisplayIds.has(subId)) {
+        return;
+      }
+
+      const visibleStart =
+        maxDateText(segmentStart, subStart);
+
+      const visibleEnd =
+        minDateText(segmentEnd, subEnd);
+
+      const shouldShiftHalfDay =
+        element.dataset.subShiftHalfDay === "1" &&
+        getDateTimeValue(subStart) >= getDateTimeValue(segmentStart);
+
+      const halfDayOffset =
+        shouldShiftHalfDay ? 0.5 : 0;
+
+      const leftPercent =
+        clampPercent(
+          ((getDayOffset(segmentStart, visibleStart) + halfDayOffset) /
+            segmentDurationDays) * 100
+        );
+
+      const widthDays =
+        Math.max(
+          0.5,
+          getInclusiveDateDuration(visibleStart, visibleEnd) - halfDayOffset
+        );
+
+      const widthPercent =
+        Math.min(
+          Math.max(6, 100 - leftPercent),
+          Math.max(8, (widthDays / segmentDurationDays) * 100)
+        );
+
+      element.style.setProperty("--sub-left", `${leftPercent}%`);
+      element.style.setProperty("--sub-width", `${widthPercent}%`);
+
+      const originalSubDurationDays =
+        Math.max(
+          1,
+          getInclusiveDateDuration(subStart, subEnd)
+        );
+
+      applyFixedDayImageRuleToBanner(
+        element,
+        originalSubDurationDays,
+        getCalendarDayCellWidthFromElement(eventElement)
+      );
+
+      element.classList.remove("calendar-sub-hidden-in-segment");
+
+      usedSameDateKeys.add(sameDateKey);
+      displayedCount += 1;
+
+    });
+
+    const moreBadge =
+      layer.querySelector(".calendar-sub-more-badge");
+
+    if (moreBadge) {
+
+      // 뱃지는 단순히 3개 이상일 때가 아니라,
+      // 현재 캘린더 조각 날짜에 존재하는 하위 이벤트 수가 실제 표시 수보다 많으면 표시합니다.
+      // 따라서 동일 날짜 하위 이벤트가 2개뿐이어도 1개가 겹쳐 숨으면 +1이 표시됩니다.
+      const hiddenSegmentCount =
+        Math.max(0, segmentSubElements.length - displayedCount);
+
+      if (hiddenSegmentCount > 0) {
+        moreBadge.textContent = `+${hiddenSegmentCount}`;
+        moreBadge.title = `추가 하위 이벤트 ${hiddenSegmentCount}개`;
+        moreBadge.classList.remove("hidden");
+      } else {
+        moreBadge.textContent = "";
+        moreBadge.title = "";
+        moreBadge.classList.add("hidden");
+      }
+
+    }
+
+  }
+
+  function buildContainedSubEventsHtml(mainEventLike) {
+
+    const props =
+      mainEventLike.extendedProps || {};
+
+    const subEvents =
+      sortSubEventsByDisplayOrder(
+        props.subEvents || [],
+        mainEventLike.id || ""
+      );
+
+    if (!Array.isArray(subEvents) || subEvents.length === 0) {
+      return "";
+    }
+
+    const mainStart =
+      mainEventLike.startStr || mainEventLike.start || "";
+
+    const mainEnd =
+      props.rawEnd || mainEventLike.endStr || mainEventLike.end || mainStart;
+
+    const mainDurationDays =
+      Math.max(
+        1,
+        getInclusiveDateDuration(mainStart, mainEnd)
+      );
+
+    const subLayoutMeta =
+      buildSubEventLayoutMeta(
+        subEvents,
+        mainStart
+      );
+
+    const validSubEvents =
+      subEvents
+        .filter(subEvent => subEvent?.start_date || subEvent?.end_date);
+
+    const subItemsHtml =
+      validSubEvents
+        .map((subEvent, originalIndex) => {
+
+          const subStart =
+            getSubEventStartDate(subEvent, mainStart);
+
+          const subEnd =
+            getSubEventEndDate(subEvent) || subStart;
+
+          const layoutMeta =
+            subLayoutMeta.get(subEvent.id) || {
+              overlapsEarlier: false,
+              shiftHalfDay: false,
+              overlapLevel: 0,
+              durationDays: getInclusiveDateDuration(subStart, subEnd),
+            };
+
+          const startOffsetDays =
+            getDayOffset(mainStart, subStart);
+
+          const halfDayOffset =
+            layoutMeta.shiftHalfDay ? 0.5 : 0;
+
+          const leftPercent =
+            clampPercent(
+              ((startOffsetDays + halfDayOffset) / mainDurationDays) * 100
+            );
+
+          const widthDays =
+            Math.max(
+              0.5,
+              Number(layoutMeta.durationDays || 1) - halfDayOffset
+            );
+
+          const maxWidthPercent =
+            Math.max(
+              6,
+              100 - leftPercent
+            );
+
+          const widthPercent =
+            Math.min(
+              maxWidthPercent,
+              Math.max(
+                8,
+                (widthDays / mainDurationDays) * 100
+              )
+            );
+
+          const subColor =
+            subEvent.color || "#1f2937";
+
+          const subImage =
+            subEvent.image_url || "";
+
+          const subImagePosX =
+            subEvent.calendar_image_pos_x ??
+            subEvent.image_pos_x ??
+            50;
+
+          const subImagePosY =
+            subEvent.calendar_image_pos_y ??
+            subEvent.image_pos_y ??
+            50;
+
+          const subImageZoom =
+            subEvent.calendar_image_zoom ??
+            subEvent.image_zoom ??
+            100;
+
+          const subImageHtml =
+            subImage
+              ? `
+                <div class="calendar-sub-image-zone">
+                  <img
+                    src="${subImage}"
+                    style="
+                      object-position: ${subImagePosX}% ${subImagePosY}%;
+                      transform: scale(${Number(subImageZoom) / 100});
+                      transform-origin: ${subImagePosX}% ${subImagePosY}%;
+                    "
+                  />
+                </div>
+              `
+              : `<div class="calendar-sub-no-image"></div>`;
+
+          const classes =
+            [
+              "calendar-sub-event",
+              "calendar-sub-event-contained",
+              layoutMeta.shiftHalfDay ? "sub-overlap-shift" : "",
+              layoutMeta.overlapsEarlier ? "sub-overlap-raised" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+          return `
+            <div
+              class="${classes}"
+              data-sub-event-id="${subEvent.id || ""}"
+              data-parent-event-id="${mainEventLike.id || ""}"
+              data-sub-start="${formatDateForData(subStart)}"
+              data-sub-end="${formatDateForData(subEnd)}"
+              data-sub-original-index="${originalIndex}"
+              data-sub-display-order="${Number.isFinite(Number(subEvent.display_order)) ? Number(subEvent.display_order) : originalIndex}"
+              data-sub-shift-half-day="${layoutMeta.shiftHalfDay ? "1" : "0"}"
+              data-sub-overlap-level="${layoutMeta.overlapLevel || 0}"
+              style="
+                --event-color: ${subColor};
+                --sub-left: ${leftPercent}%;
+                --sub-width: ${widthPercent}%;
+                --sub-z: ${30 + Number(layoutMeta.overlapLevel || 0)};
+              "
+            >
+              ${subImageHtml}
+
+              <div class="calendar-sub-overlay">
+                ${textBoxHtml(
+                  "calendar-sub-title",
+                  subEvent.title || "",
+                  {
+                    textColor: subEvent.text_color,
+                    bgColor: subEvent.text_bg_color,
+                    bgAlpha: subEvent.text_bg_alpha,
+                    textSize: subEvent.text_size,
+                  }
+                )}
+              </div>
+            </div>
+          `;
+
+        })
+        .join("");
+
+    if (!subItemsHtml.trim()) {
+      return "";
+    }
+
+    const moreBadgeHtml =
+      `
+        <div
+          class="calendar-sub-more-badge hidden"
+        ></div>
+      `;
+
+    return `
+      <div class="calendar-sub-contained-layer">
+        ${subItemsHtml}
+        ${moreBadgeHtml}
+      </div>
+    `;
 
   }
 
@@ -3148,7 +4238,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   function setupMainSubCalendarEditor(subEvents = []) {
 
     currentMainSubEvents =
-      subEvents.map(subEvent => ({ ...subEvent }));
+      sortSubEventsByDisplayOrder(
+        subEvents,
+        currentEvent?.id || currentDetailEvent?.id || ""
+      ).map(subEvent => ({ ...subEvent }));
 
     currentMainSubCalendarSubId =
       currentMainSubEvents[0]?.id || "";
@@ -3313,7 +4406,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       });
 
-    applySearchFilter();
+    // 하위 배너 이미지 슬라이더는 캘린더를 다시 그리지만,
+    // 사용자가 보던 페이지 위치는 유지해야 합니다.
+    runWithPageScrollRestored(() => {
+      applySearchFilter();
+    });
 
   }
 
@@ -3327,6 +4424,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!subEventList) return;
 
+    if (isSubEventDragging) {
+      return;
+    }
+
     subEventList.innerHTML = "";
 
     if (currentSubEvents.length === 0) {
@@ -3338,7 +4439,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     }
 
-    currentSubEvents.forEach(subEvent => {
+    currentSubEvents =
+      sortSubEventsByDisplayOrder(
+        currentSubEvents,
+        currentDetailEvent?.id || ""
+      );
+
+    currentSubEvents.forEach((subEvent, index) => {
 
       const card =
         document.createElement("div");
@@ -3346,9 +4453,21 @@ document.addEventListener("DOMContentLoaded", async function () {
       card.className =
         "sub-event-card";
 
+      if (isAdmin) {
+        card.draggable = true;
+        card.title = "드래그해서 하위 이벤트 표시 순서 변경";
+      }
+
       /* 하위 이벤트 카드를 정확히 찾기 위한 id */
       card.dataset.subEventId =
         subEvent.id;
+
+      card.dataset.subDisplayOrder =
+        String(
+          Number.isFinite(Number(subEvent.display_order))
+            ? Number(subEvent.display_order)
+            : index
+        );
 
       card.style.setProperty(
         "--event-color",
@@ -3892,87 +5011,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         const displayType =
           info.event.extendedProps.displayType || "main";
 
-        if (displayType === "inlineSub") {
-
-          const subEvent =
-            info.event.extendedProps.subEvent || {};
-
-          const subColor =
-            subEvent.color || "#1f2937";
-
-          const subImage =
-            subEvent.image_url || "";
-
-          const subImagePosX =
-            subEvent.calendar_image_pos_x ??
-            subEvent.image_pos_x ??
-            50;
-
-          const subImagePosY =
-            subEvent.calendar_image_pos_y ??
-            subEvent.image_pos_y ??
-            50;
-
-          const subImageZoom =
-            subEvent.calendar_image_zoom ??
-            subEvent.image_zoom ??
-            100;
-
-          const subImageHtml =
-            subImage
-              ? `
-                <div class="calendar-sub-image-zone">
-                  <img
-                    src="${subImage}"
-                    style="
-                      object-position:
-                        ${subImagePosX}%
-                        ${subImagePosY}%;
-
-                      transform:
-                        scale(${Number(subImageZoom) / 100});
-
-                      transform-origin:
-                        ${subImagePosX}%
-                        ${subImagePosY}%;
-                    "
-                  />
-                </div>
-              `
-              : `<div class="calendar-sub-no-image"></div>`;
-
-          return {
-
-            html: `
-              <div
-                class="calendar-sub-event"
-                data-sub-event-id="${subEvent.id || ""}"
-                data-parent-event-id="${info.event.extendedProps.parentEventId || ""}"
-                style="--event-color: ${subColor};"
-              >
-
-                ${subImageHtml}
-
-                <div class="calendar-sub-overlay">
-                  ${textBoxHtml(
-                    "calendar-sub-title",
-                    subEvent.title || "",
-                    {
-                      textColor: subEvent.text_color,
-                      bgColor: subEvent.text_bg_color,
-                      bgAlpha: subEvent.text_bg_alpha,
-                      textSize: subEvent.text_size,
-                    }
-                  )}
-                </div>
-
-              </div>
-            `,
-
-          };
-
-        }
-
         const image =
           info.event.extendedProps.image;
 
@@ -4039,6 +5077,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         const isExpired =
           compareDate < today;
 
+        const subContainedHtml =
+          buildContainedSubEventsHtml(info.event);
+
         return {
 
           html: `
@@ -4061,6 +5102,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 )}
 
               </div>
+
+              ${subContainedHtml}
 
             </div>
           `,
@@ -4091,6 +5134,70 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (harness && mainEventId) {
           harness.dataset.groupEventId = mainEventId;
+        }
+
+        syncContainedSubEventsToSegment(info);
+
+        if (info.event.extendedProps.displayType !== "inlineSub") {
+
+          const mainBanner =
+            info.el.querySelector(".game-event");
+
+          const mainStart =
+            info.event.startStr || "";
+
+          const mainEnd =
+            info.event.extendedProps.rawEnd ||
+            subtractOneDay(info.event.endStr) ||
+            mainStart;
+
+          applyFixedDayImageRuleToBanner(
+            mainBanner,
+            getInclusiveDateDuration(mainStart, mainEnd),
+            getCalendarDayCellWidthFromElement(info.el)
+          );
+
+        }
+
+        if (
+          harness &&
+          info.event.extendedProps.displayType === "inlineSub"
+        ) {
+
+          const subDurationDays =
+            Math.max(
+              1,
+              Number(info.event.extendedProps.subDurationDays || 1)
+            );
+
+          const subOverlapLevel =
+            Number(info.event.extendedProps.subOverlapLevel || 0);
+
+          harness.style.setProperty(
+            "--sub-duration-days",
+            String(subDurationDays)
+          );
+
+          harness.style.setProperty(
+            "--sub-overlap-level",
+            String(subOverlapLevel)
+          );
+
+          info.el.style.setProperty(
+            "--sub-duration-days",
+            String(subDurationDays)
+          );
+
+          if (info.event.extendedProps.subOverlapShift) {
+            harness.classList.add("sub-overlap-shift-harness");
+            info.el.classList.add("sub-overlap-shift-event");
+          }
+
+          if (info.event.extendedProps.subOverlapRaised) {
+            harness.classList.add("sub-overlap-raised-harness");
+            info.el.classList.add("sub-overlap-raised-event");
+          }
+
         }
 
         const setGroupHover = (isHovering) => {
@@ -4131,27 +5238,42 @@ document.addEventListener("DOMContentLoaded", async function () {
           () => setGroupHover(false)
         );
 
+        // =========================
         // 클릭 = 상세 보기
+        // - 서브 배너가 메인 배너 안에 올라와 있어도 클릭은 항상 상세창으로 연결
+        // - capture 단계에서 처리해서 내부 레이어가 클릭을 가로막는 상황을 방지
+        // =========================
+
+        const openDetailFromCalendarClick = (e) => {
+
+          if (isEditingMainEvent) return;
+
+          /* 같은 클릭이 중복 처리되지 않도록 방지 */
+          if (e?.defaultPrevented) return;
+
+          const detailEvent =
+            info.event.extendedProps.displayType === "inlineSub"
+              ? (
+                calendar.getEventById(
+                  info.event.extendedProps.parentEventId
+                ) || info.event.extendedProps.parentEvent
+              )
+              : info.event;
+
+          if (!detailEvent) return;
+
+          e?.preventDefault?.();
+
+          openDetailModal(
+            detailEvent
+          );
+
+        };
+
         info.el.addEventListener(
           "click",
-          () => {
-
-            if (isEditingMainEvent) return;
-
-            const detailEvent =
-              info.event.extendedProps.displayType === "inlineSub"
-                ? (
-                  calendar.getEventById(
-                    info.event.extendedProps.parentEventId
-                  ) || info.event.extendedProps.parentEvent
-                )
-                : info.event;
-
-            openDetailModal(
-              detailEvent
-            );
-
-          }
+          openDetailFromCalendarClick,
+          true
         );
 
       },
