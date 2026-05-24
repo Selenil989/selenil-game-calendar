@@ -146,6 +146,8 @@ body {
   width: var(--event-image-width, 34%);
   height: 100%;
   overflow: hidden;
+
+  z-index: 0;
 }
 
 /* 실제 이미지 */
@@ -157,19 +159,36 @@ body {
   display: block;
 }
 
-/* 이미지와 대표색이 자연스럽게 이어지는 그라데이션 */
-.event-image-zone::after {
+/* =========================
+   메인 이벤트 이미지 블렌딩
+   하위 이벤트처럼 대표색 배경이 이미지 쪽으로 겹치는 방식
+   그라데이션 강도는 기존 메인 이벤트 수준 유지
+========================= */
+
+.game-event::before {
   content: "";
+
   position: absolute;
+
   top: 0;
+  bottom: 0;
+
+  left: calc(var(--event-image-width, 34%) - 10%);
   right: 0;
-  width: 45%;
-  height: 100%;
 
   background:
     linear-gradient(90deg,
-      rgba(0, 0, 0, 0),
-      var(--event-color, #1f2937));
+      rgba(0, 0, 0, 0) 0%,
+      var(--event-color, #1f2937) 8%,
+      var(--event-color, #1f2937) 100%);
+
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 기존 이미지 자체에 얹던 그라데이션은 사용하지 않음 */
+.event-image-zone::after {
+  content: none;
 }
 
 /* 이미지가 없는 이벤트 */
@@ -437,16 +456,26 @@ body {
 ========================= */
 
 .fc .fc-day-today {
-  background: rgba(99, 102, 241, 0.18) !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(250, 204, 21, 0.24),
+      rgba(234, 179, 8, 0.13)
+    ) !important;
 
   box-shadow:
-    inset 0 0 0 2px rgba(129, 140, 248, 0.7),
-    0 0 20px rgba(99, 102, 241, 0.18);
+    inset 0 0 0 2px rgba(250, 204, 21, 0.85),
+    inset 0 0 28px rgba(250, 204, 21, 0.16),
+    0 0 22px rgba(250, 204, 21, 0.18);
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
-  color: #c7d2fe !important;
+  color: #fde68a !important;
   font-weight: bold;
+
+  background: rgba(120, 53, 15, 0.55);
+  border-radius: 999px;
+  padding: 2px 7px;
 }
 
 
@@ -1272,4 +1301,1422 @@ body {
 .edit-main-icon:hover {
   background: #1b2433;
   transform: scale(1.08);
+}
+
+
+
+/* =========================
+   캘린더 안 하위 이벤트 표시
+   하위 이벤트 기간에 맞춰 별도 미니 배너로 표시
+========================= */
+
+/* 캘린더 안 하위 이벤트 미니 배너 */
+.calendar-sub-event {
+  position: relative;
+
+  height: 24px;
+  width: 100%;
+
+  overflow: hidden;
+
+  border-radius: 6px;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--event-color, #1f2937) 0%,
+      color-mix(
+        in srgb,
+        var(--event-color, #1f2937) 75%,
+        #000 25%
+      ) 100%
+    );
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+/* 하위 이벤트 이미지 영역 */
+.calendar-sub-image-zone {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  width: 30%;
+
+  overflow: hidden;
+
+  z-index: 0;
+}
+
+/* 하위 이벤트 실제 이미지 */
+.calendar-sub-image-zone img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+
+  display: block;
+}
+
+/* 하위 이벤트 이미지 없음 */
+.calendar-sub-no-image {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--event-color, #1f2937),
+      #111827
+    );
+}
+
+/* 하위 이벤트 이미지와 대표색 연결 */
+.calendar-sub-event::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  left: 24%;
+  right: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0) 0%,
+      var(--event-color, #1f2937) 8%,
+      var(--event-color, #1f2937) 100%
+    );
+
+  z-index: 1;
+
+  pointer-events: none;
+}
+
+/* 하위 이벤트 텍스트 오버레이 */
+.calendar-sub-overlay {
+  position: absolute;
+  inset: 0;
+
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+
+  padding-left: 8px;
+  padding-right: 8px;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.65),
+      rgba(0, 0, 0, 0.12)
+    );
+}
+
+/* 하위 이벤트 제목 */
+.calendar-sub-title {
+  overflow: hidden;
+
+  color: white;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  line-height: 1.1;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* 메인 이벤트 편집창 내부 구분 제목 */
+.modal-sub-section-title {
+  margin-top: 22px;
+  margin-bottom: 8px;
+
+  padding-top: 14px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+  color: #cbd5e1;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   캘린더 상단 제목 / 설정 버튼
+========================= */
+
+.site-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-title-row h1 {
+  margin: 0;
+}
+
+.edit-calendar-settings-btn {
+  border: none;
+  border-radius: 8px;
+
+  padding: 7px 9px;
+
+  background: #111827;
+  color: white;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
+}
+
+.edit-calendar-settings-btn:hover {
+  background: #1b2433;
+  transform: scale(1.08);
+}
+
+
+
+/* =========================
+   캘린더 상단 이미지 영역
+========================= */
+
+.calendar-hero-list {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  margin: 12px 0 20px;
+}
+
+.calendar-hero-item {
+  position: relative;
+
+  width: min(220px, 100%);
+  height: 110px;
+
+  overflow: hidden;
+
+  border-radius: 18px;
+
+  background: #111827;
+
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.calendar-hero-item img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+.calendar-hero-text {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+
+  width: fit-content;
+  max-width: calc(100% - 20px);
+
+  color: var(--default-text-color, #ffffff);
+  background: var(--default-text-bg, rgba(0, 0, 0, 0.35));
+
+  border-radius: 999px;
+
+  padding: 5px 9px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.75);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* =========================
+   캘린더 설정창
+========================= */
+
+.calendar-settings-content {
+  width: 520px;
+  max-width: calc(100% - 24px);
+}
+
+.calendar-hero-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calendar-hero-editor-item {
+  padding: 12px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar-hero-editor-item input[type="text"] {
+  margin-top: 8px;
+}
+
+.settings-help-text {
+  margin: 0 0 10px;
+
+  color: #9ca3af;
+
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+
+
+/* =========================
+   공통 텍스트 스타일 박스
+   설정창에서 정한 색상 / 배경 / 투명도 적용
+========================= */
+
+.text-style-box,
+.game-event .title,
+.calendar-sub-title,
+.detail-description,
+.sub-event-title,
+.sub-event-description {
+  color: var(--default-text-color, #ffffff) !important;
+}
+
+.game-event .title,
+.calendar-sub-title,
+.sub-event-title,
+.sub-event-description {
+  display: inline-block;
+
+  width: fit-content;
+  max-width: calc(100% - 20px);
+
+  background: var(--default-text-bg, rgba(0, 0, 0, 0.35));
+
+  border-radius: 999px;
+
+  padding: 3px 7px;
+}
+
+.detail-description {
+  background: var(--default-text-bg, rgba(0, 0, 0, 0.35));
+  border-radius: 12px;
+}
+
+
+
+/* =========================
+   날짜 밀림 보정 이후 하위 이벤트 여백
+========================= */
+
+.fc-event .calendar-sub-event {
+  margin-top: 2px;
+}
+
+/* =========================
+   편집 UI 토글 섹션
+========================= */
+
+.editor-section {
+  margin-top: 12px;
+  padding: 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.editor-section summary {
+  cursor: pointer;
+  list-style: none;
+
+  color: #e5e7eb;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.editor-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.editor-section summary::before {
+  content: "▶";
+  display: inline-block;
+
+  margin-right: 8px;
+
+  color: #9ca3af;
+  font-size: 10px;
+
+  transition: transform 0.2s;
+}
+
+.editor-section[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.editor-section > label:first-of-type {
+  margin-top: 14px;
+}
+
+/* =========================
+   공통 텍스트 스타일
+   텍스트가 없으면 배경도 표시하지 않음
+========================= */
+
+.text-style-box {
+  display: inline-block;
+
+  width: fit-content;
+  max-width: calc(100% - 20px);
+
+  color: var(--text-color, var(--default-text-color, #ffffff)) !important;
+  background: var(--text-bg, var(--default-text-bg, rgba(0, 0, 0, 0.35)));
+
+  border-radius: 999px;
+
+  padding: 3px 7px;
+
+  font-size: var(--text-size, var(--default-text-size, 13px)) !important;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-style-box:empty {
+  display: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.detail-description .text-style-box,
+.sub-event-description.text-style-box {
+  white-space: pre-wrap;
+  border-radius: 12px;
+  line-height: 1.45;
+}
+
+.detail-description:empty,
+.sub-event-description:empty,
+.calendar-hero-text:empty,
+.game-event .title:empty,
+.calendar-sub-title:empty {
+  display: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* 기존 전역 텍스트 박스 규칙 보정 */
+.game-event .title,
+.calendar-sub-title,
+.sub-event-title,
+.sub-event-description {
+  color: var(--text-color, var(--default-text-color, #ffffff)) !important;
+  background: var(--text-bg, var(--default-text-bg, rgba(0, 0, 0, 0.35)));
+  font-size: var(--text-size, var(--default-text-size, 13px)) !important;
+}
+
+.calendar-hero-text {
+  color: var(--text-color, var(--default-text-color, #ffffff)) !important;
+  background: var(--text-bg, var(--default-text-bg, rgba(0, 0, 0, 0.35)));
+  font-size: var(--text-size, var(--default-text-size, 13px)) !important;
+}
+
+/* =========================
+   이번 수정: 편집 패널 스크롤 / 버튼 고정 / 버튼 색상 통일
+========================= */
+
+#eventModal .modal-content,
+#subEventModal .modal-content,
+#calendarSettingsModal .modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#eventModal .buttons,
+#subEventModal .buttons,
+#calendarSettingsModal .buttons {
+  position: sticky;
+  bottom: -25px;
+  z-index: 30;
+
+  margin-left: -25px;
+  margin-right: -25px;
+  margin-bottom: -25px;
+  padding: 14px 25px 18px;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(31, 41, 55, 1),
+      rgba(31, 41, 55, 0.94)
+    );
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#saveCalendarSettingsBtn {
+  background: #4f46e5;
+  color: white;
+}
+
+#saveCalendarSettingsBtn:hover {
+  background: #6366f1;
+}
+
+#closeCalendarSettingsBtn {
+  background: #374151;
+  color: white;
+}
+
+#closeCalendarSettingsBtn:hover {
+  background: #4b5563;
+}
+
+#saveCalendarSettingsBtn,
+#closeCalendarSettingsBtn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+/* =========================
+   하위 이벤트 배너를 메인 이벤트 배너 안쪽에 들어간 것처럼 보이게 보정
+   실제 데이터는 기간 맞춤을 위해 별도 이벤트로 유지
+========================= */
+
+.game-event {
+  min-height: 58px;
+  height: 58px;
+}
+
+.game-event .title {
+  top: 22px;
+}
+
+.fc-daygrid-event-harness:has(.calendar-sub-event) {
+  margin-top: -26px !important;
+  padding-left: 8px;
+  padding-right: 8px;
+  box-sizing: border-box;
+  z-index: 9 !important;
+  pointer-events: auto;
+}
+
+.fc-daygrid-event-harness:has(.calendar-sub-event) .fc-event {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.fc-event .calendar-sub-event {
+  height: 20px;
+  margin-top: 0 !important;
+  border-radius: 5px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.38);
+}
+
+.calendar-sub-overlay {
+  padding-left: 7px;
+  padding-right: 7px;
+}
+
+/* 서브 배너가 메인 배너 위에 올라왔을 때 클릭 가능하도록 */
+.calendar-sub-event {
+  pointer-events: auto;
+}
+
+/* =========================
+   텍스트 스타일 실시간 반영 보정
+========================= */
+
+.text-style-box {
+  color: var(--text-color, var(--default-text-color, #ffffff)) !important;
+  background: var(--text-bg, var(--default-text-bg, rgba(0, 0, 0, 0.35))) !important;
+  font-size: var(--text-size, var(--default-text-size, 13px)) !important;
+}
+
+.calendar-hero-text.text-style-box:empty,
+.text-style-box:empty {
+  display: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+
+/* =========================
+   이번 수정 2차: 메인 제목 가림 방지 / 입력 UI 폭 보정 / 숫자 입력 추가
+========================= */
+
+/* 메인 제목이 서브 배너에 묻히지 않도록 메인 배너 높이와 제목 위치 재정렬 */
+.game-event {
+  height: 68px !important;
+  min-height: 68px !important;
+}
+
+.game-event .category-badge {
+  top: 7px !important;
+}
+
+.game-event .title {
+  top: 25px !important;
+  left: 10px !important;
+  z-index: 6 !important;
+  max-width: calc(100% - 24px) !important;
+}
+
+/* 하위 배너는 메인 배너 하단에 작게 들어간 것처럼 보이게 */
+.fc-daygrid-event-harness:has(.calendar-sub-event) {
+  margin-top: -20px !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  z-index: 8 !important;
+}
+
+.fc-event .calendar-sub-event {
+  height: 16px !important;
+  border-radius: 5px !important;
+}
+
+.calendar-sub-overlay {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+.calendar-sub-title.text-style-box,
+.calendar-sub-title {
+  font-size: min(var(--text-size, var(--default-text-size, 11px)), 11px) !important;
+  padding: 1px 5px !important;
+  line-height: 1 !important;
+}
+
+.calendar-sub-image-zone {
+  width: 24% !important;
+}
+
+.calendar-sub-event::before {
+  left: 20% !important;
+}
+
+/* 슬라이더 + 숫자 입력 */
+.range-number-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  gap: 8px;
+  align-items: center;
+  max-width: 100%;
+}
+
+.modal-content .range-number-row input[type="range"] {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.modal-content .range-number-row .range-number-input {
+  width: 72px;
+  min-width: 72px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+/* 가로로 너무 긴 입력 UI 보정 */
+.modal-content input[type="file"] {
+  max-width: 100%;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.modal-content input[type="color"] {
+  width: 92px !important;
+  height: 44px !important;
+  min-height: 44px;
+  padding: 4px !important;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="date"],
+.modal-content input[type="email"],
+.modal-content input[type="password"],
+.modal-content textarea,
+.modal-content select {
+  max-width: 100%;
+}
+
+.calendar-hero-editor-item input[type="file"],
+.calendar-hero-editor-item input[type="text"] {
+  max-width: 100%;
+}
+
+/* 편집 패널 내부 스크롤이 자연스럽도록 폭/여백 보정 */
+#eventModal .modal-content,
+#subEventModal .modal-content,
+#calendarSettingsModal .modal-content {
+  width: min(420px, calc(100vw - 40px));
+  box-sizing: border-box;
+}
+
+/* 게임 이벤트 스케줄 상단 이미지 위치 조금 더 위로 */
+.login-status {
+  margin-bottom: 8px !important;
+}
+
+.calendar-hero-list {
+  margin-top: -4px !important;
+  margin-bottom: 16px !important;
+}
+
+/* 모바일에서는 과하게 겹치지 않게 조금 완화 */
+@media (max-width: 768px) {
+  .game-event {
+    height: 62px !important;
+    min-height: 62px !important;
+  }
+
+  .game-event .title {
+    top: 23px !important;
+  }
+
+  .fc-daygrid-event-harness:has(.calendar-sub-event) {
+    margin-top: -18px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .fc-event .calendar-sub-event {
+    height: 15px !important;
+  }
+
+  .range-number-row {
+    grid-template-columns: minmax(0, 1fr) 64px;
+  }
+
+  .modal-content .range-number-row .range-number-input {
+    width: 64px;
+    min-width: 64px;
+  }
+}
+
+/* =========================
+   이번 수정 3차: 6일 기준 그라데이션 / 그룹 hover / 상단 이미지 텍스트 스타일
+========================= */
+
+/* 메인 이벤트 이미지 영역은 일정 길이와 관계없이 항상 6일 기준(2일/6일 = 33.333%) */
+.game-event {
+  --event-image-width: 33.333% !important;
+}
+
+/* 기존 개별 hover를 무력화하고 JS가 붙이는 그룹 hover로 통일 */
+.game-event:hover {
+  transform: none !important;
+}
+
+.game-event.event-group-hover,
+.calendar-sub-event.event-group-hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+}
+
+.game-event,
+.calendar-sub-event {
+  transform-origin: center center;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s,
+    opacity 0.2s;
+}
+
+.calendar-sub-event.event-group-hover {
+  filter: brightness(1.05);
+}
+
+/* 상단 이미지 안의 실제 이미지를 아래 정렬이 아니라 중간보다 살짝 위쪽 기준으로 표시 */
+.calendar-hero-item img {
+  object-position: center 38% !important;
+}
+
+/* 상단 이미지 영역 자체도 제목 쪽으로 더 붙임 */
+.calendar-hero-list {
+  margin-top: -14px !important;
+  transform: translateY(-6px);
+}
+
+.search-box {
+  margin-top: -4px;
+}
+
+/* 상단 이미지 텍스트는 상단 이미지 전용 기본 스타일을 사용 */
+.calendar-hero-text {
+  color: var(--text-color, #ffffff) !important;
+  background: var(--text-bg, rgba(0, 0, 0, 0.35)) !important;
+  font-size: var(--text-size, 13px) !important;
+}
+
+/* 상단 이미지 텍스트 스타일 UI를 짧게 배치 */
+.compact-style-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.compact-style-grid label {
+  margin-top: 14px;
+}
+
+.compact-style-grid input[type="color"] {
+  width: 100% !important;
+  max-width: 130px;
+}
+
+@media (max-width: 768px) {
+  .calendar-hero-list {
+    margin-top: -8px !important;
+    transform: translateY(-3px);
+  }
+
+  .compact-style-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
+   이번 수정 4차: 그룹 hover를 harness 기준으로 통일 / 상단 이미지 더 위로 / 기본 텍스트 스타일 통합
+========================= */
+
+/* 개별 배너가 따로 움직이지 않도록 내부 transform은 끔 */
+.game-event.event-group-hover,
+.calendar-sub-event.event-group-hover {
+  transform: none !important;
+  filter: none !important;
+}
+
+/* FullCalendar 이벤트 줄 자체를 같이 움직여서 한 덩어리처럼 보이게 처리 */
+.fc-daygrid-event-harness.event-group-hover-harness {
+  transform: translateY(-1px) scale(1.01) !important;
+  transform-origin: center center !important;
+  z-index: 20 !important;
+  transition:
+    transform 0.2s,
+    filter 0.2s,
+    opacity 0.2s !important;
+}
+
+.fc-daygrid-event-harness.event-group-hover-harness .game-event,
+.fc-daygrid-event-harness.event-group-hover-harness .calendar-sub-event {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+  filter: brightness(1.04);
+}
+
+/* 기존 hover transform이 다시 개별 동작하지 않도록 마지막에서 재차 무력화 */
+.game-event:hover,
+.calendar-sub-event:hover {
+  transform: none !important;
+}
+
+/* 상단 이미지의 보이는 기준점을 더 위쪽으로 이동 */
+.calendar-hero-item img {
+  object-position: center 10% !important;
+}
+
+/* 상단 이미지 영역 자체도 더 위로 당김 */
+.calendar-hero-list {
+  margin-top: -34px !important;
+  margin-bottom: 8px !important;
+  transform: translateY(-18px) !important;
+}
+
+.search-box {
+  margin-top: -14px !important;
+}
+
+/* 상단 이미지 텍스트 기본 스타일이 전체 기본 텍스트 스타일 역할도 하도록 UI 명칭/구조 보정 */
+#calendarSettingsModal .editor-section summary {
+  line-height: 1.3;
+}
+
+/* 숨김 input은 편집 UI에서 공간 차지하지 않게 */
+#defaultTextColorInput,
+#defaultTextBgColorInput,
+#defaultTextBgAlphaInput,
+#defaultTextSizeInput {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .calendar-hero-list {
+    margin-top: -20px !important;
+    transform: translateY(-10px) !important;
+  }
+
+  .search-box {
+    margin-top: -8px !important;
+  }
+}
+
+/* =========================
+   이번 수정 5차: 요청 문구 기준 히어로 스타일 통일
+   1. 메인/서브 텍스트 스타일 UI를 상단 이미지 텍스트 기본 스타일과 같은 compact hero 스타일로 통일
+   2. 모든 이미지 업로드 / 이미지 슬라이드 / 넘버 입력을 hero 스타일로 통일
+   3. 메인 배너 안 하위 이벤트 이미지 조절 UI도 hero 스타일로 통일
+   4. 게임 이벤트 스케줄 상단 이미지 위치를 더 위로 이동
+   5. 캘린더 설정의 상단 이미지 / 텍스트 영역도 hero 스타일로 통일
+========================= */
+
+/* 모든 편집 섹션을 상단 이미지 설정과 같은 카드형 느낌으로 정리 */
+.hero-style-section {
+  border-color: rgba(129, 140, 248, 0.22) !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.025)
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
+.hero-style-section summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f3f4f6 !important;
+  letter-spacing: -0.01em;
+}
+
+.hero-style-section summary::before {
+  color: #a5b4fc !important;
+}
+
+/* 텍스트 색상/배경색 영역을 상단 이미지 텍스트 기본 스타일처럼 2열 compact 배치 */
+.hero-style-section .compact-style-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.hero-style-section .compact-style-grid > div,
+.hero-editor-card,
+.calendar-hero-editor-item {
+  padding: 12px;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.035)
+    );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.hero-style-section label,
+.calendar-hero-editor-item label {
+  margin-top: 12px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hero-style-section .compact-style-grid label,
+.hero-editor-card label,
+.calendar-hero-editor-item label {
+  margin-top: 0;
+}
+
+/* 색상 선택도 히어로 스타일처럼 큼직하고 알아보기 쉽게 */
+.hero-style-section input[type="color"],
+.modal-content input[type="color"] {
+  width: 100% !important;
+  max-width: none !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 5px !important;
+  border-radius: 14px !important;
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  cursor: pointer;
+}
+
+/* 이미지 업로드 input을 상단 이미지 업로드 카드와 같은 스타일로 */
+.hero-style-section input[type="file"],
+.calendar-hero-editor-item input[type="file"] {
+  width: 100%;
+  margin-top: 7px;
+  padding: 10px !important;
+  border-radius: 12px !important;
+  background: #111827 !important;
+  border: 1px dashed rgba(165, 180, 252, 0.38) !important;
+  color: #d1d5db;
+  font-size: 12px !important;
+}
+
+.hero-style-section input[type="file"]::file-selector-button,
+.calendar-hero-editor-item input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 10px;
+  background: #202c44;
+  color: white;
+  cursor: pointer;
+}
+
+/* 이미지 슬라이더 + 숫자 입력도 hero 스타일 카드 안의 조절 UI처럼 */
+.hero-style-section .range-number-row,
+.image-style-section .range-number-row {
+  grid-template-columns: minmax(0, 1fr) 76px !important;
+  gap: 10px !important;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-style-section .range-number-row input[type="range"],
+.image-style-section .range-number-row input[type="range"] {
+  height: 28px;
+  accent-color: #818cf8;
+}
+
+.hero-style-section .range-number-input,
+.image-style-section .range-number-input {
+  width: 76px !important;
+  min-width: 76px !important;
+  height: 36px;
+  padding: 6px 8px !important;
+  border-radius: 11px !important;
+  background: #0f172a !important;
+  border: 1px solid rgba(165, 180, 252, 0.25) !important;
+  color: #e5e7eb !important;
+  font-weight: 700;
+}
+
+/* select도 하위 배너 이미지 조절 영역에서 같은 히어로 카드 느낌으로 */
+.hero-style-section select {
+  margin-top: 7px;
+  border-radius: 12px !important;
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 캘린더 설정의 상단 이미지 / 텍스트 영역 전체를 히어로 카드 UI로 */
+.calendar-hero-upload-section .calendar-hero-editor-list {
+  gap: 10px !important;
+}
+
+.calendar-hero-upload-section .calendar-hero-editor-item {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.calendar-hero-upload-section .calendar-hero-editor-item label {
+  grid-row: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.72);
+  color: #e5e7eb;
+}
+
+.calendar-hero-upload-section .calendar-hero-editor-item input[type="text"] {
+  margin-top: 0 !important;
+  border-radius: 12px !important;
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 상단 이미지들을 더 위로: 기존보다 더 강하게 당김 */
+.calendar-hero-list {
+  margin-top: -54px !important;
+  margin-bottom: 2px !important;
+  transform: translateY(-30px) !important;
+}
+
+.search-box {
+  margin-top: -28px !important;
+}
+
+/* 상단 이미지 내부 crop도 더 위쪽이 보이게 */
+.calendar-hero-item img {
+  object-position: center 0% !important;
+}
+
+/* 상단 이미지 자체를 조금 더 타이트하게 해서 위로 올라간 느낌 강화 */
+.calendar-hero-item {
+  height: 106px !important;
+}
+
+/* 텍스트 박스의 시각 스타일도 히어로 텍스트와 동일 계열로 정리 */
+.text-style-box,
+.calendar-hero-text,
+.game-event .title,
+.calendar-sub-title,
+.sub-event-title,
+.sub-event-description {
+  border-radius: 999px !important;
+  padding: 4px 8px !important;
+  font-weight: 700;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.detail-description .text-style-box,
+.sub-event-description.text-style-box {
+  border-radius: 12px !important;
+}
+
+@media (max-width: 768px) {
+  .hero-style-section .compact-style-grid,
+  .calendar-hero-upload-section .calendar-hero-editor-item {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-hero-upload-section .calendar-hero-editor-item label {
+    grid-row: auto;
+    min-height: auto;
+    justify-content: flex-start;
+    padding: 8px 10px;
+  }
+
+  .calendar-hero-list {
+    margin-top: -28px !important;
+    transform: translateY(-16px) !important;
+  }
+
+  .search-box {
+    margin-top: -14px !important;
+  }
+
+  .hero-style-section .range-number-row,
+  .image-style-section .range-number-row {
+    grid-template-columns: minmax(0, 1fr) 66px !important;
+  }
+
+  .hero-style-section .range-number-input,
+  .image-style-section .range-number-input {
+    width: 66px !important;
+    min-width: 66px !important;
+  }
+}
+
+
+/* =========================
+   이번 수정 6차: 상단 이미지와 검색창 사이 여백 복구 / 버튼 클릭 방해 방지
+========================= */
+
+.calendar-hero-list {
+  margin-bottom: 26px !important;
+}
+
+.search-box {
+  margin-top: 0 !important;
+}
+
+.site-title-row,
+.edit-calendar-settings-btn,
+.top-buttons,
+.top-buttons button {
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.calendar-hero-list {
+  pointer-events: auto;
+}
+
+/* =========================
+   이번 수정 7차: 상단 이미지 선택형 히어로 편집 UI
+========================= */
+
+.hero-slot-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.hero-slot-toolbar select {
+  margin-top: 0 !important;
+  border-radius: 14px !important;
+  background: #111827 !important;
+  border: 1px solid rgba(165, 180, 252, 0.22) !important;
+  color: #e5e7eb !important;
+  min-height: 42px;
+}
+
+.hero-mini-btn,
+.hero-delete-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 11px 13px;
+  cursor: pointer;
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  transition: 0.2s;
+}
+
+.hero-mini-btn {
+  background: #202c44;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+.hero-mini-btn:hover {
+  background: #1b2433;
+  transform: translateY(-1px);
+}
+
+.hero-delete-btn {
+  width: 100%;
+  margin-top: 16px;
+  background: #991b1b;
+}
+
+.hero-delete-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.single-hero-editor {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.028)
+    );
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 22px rgba(0, 0, 0, 0.16);
+}
+
+.hero-editor-preview-card {
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(17, 24, 39, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+}
+
+.hero-editor-preview {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(31, 41, 55, 0.9),
+      rgba(15, 23, 42, 0.95)
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hero-editor-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-editor-preview .calendar-hero-text {
+  left: 10px;
+  right: auto;
+  bottom: 10px;
+}
+
+.hero-editor-empty {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.single-hero-editor .hero-editor-card {
+  margin-bottom: 12px;
+}
+
+.single-hero-editor > label {
+  margin-top: 12px !important;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.single-hero-editor input[type="text"] {
+  margin-top: 6px;
+  border-radius: 13px !important;
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.single-hero-editor input[type="file"] {
+  width: 100%;
+  margin-top: 7px;
+  padding: 10px !important;
+  border-radius: 12px !important;
+  background: #111827 !important;
+  border: 1px dashed rgba(165, 180, 252, 0.38) !important;
+  color: #d1d5db;
+  font-size: 12px !important;
+}
+
+.single-hero-editor input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 10px;
+  background: #202c44;
+  color: white;
+  cursor: pointer;
+}
+
+.single-hero-editor .range-number-row {
+  grid-template-columns: minmax(0, 1fr) 76px !important;
+  gap: 10px !important;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.single-hero-editor .range-number-row input[type="range"] {
+  height: 28px;
+  accent-color: #818cf8;
+}
+
+.single-hero-editor .range-number-input {
+  width: 76px !important;
+  min-width: 76px !important;
+  height: 36px;
+  padding: 6px 8px !important;
+  border-radius: 11px !important;
+  background: #0f172a !important;
+  border: 1px solid rgba(165, 180, 252, 0.25) !important;
+  color: #e5e7eb !important;
+  font-weight: 700;
+}
+
+.hero-single-style-grid {
+  margin-top: 14px !important;
+}
+
+.hero-single-style-grid > div {
+  padding: 12px;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.035)
+    );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-single-style-grid label {
+  margin-top: 0 !important;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hero-single-style-grid input[type="color"] {
+  width: 100% !important;
+  max-width: none !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 5px !important;
+  border-radius: 14px !important;
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  cursor: pointer;
+}
+
+.calendar-hero-item img {
+  transform-origin: center;
+}
+
+@media (max-width: 768px) {
+  .hero-slot-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-mini-btn {
+    width: 100%;
+  }
+
+  .hero-editor-preview {
+    height: 110px;
+  }
+
+  .single-hero-editor .range-number-row {
+    grid-template-columns: minmax(0, 1fr) 66px !important;
+  }
+
+  .single-hero-editor .range-number-input {
+    width: 66px !important;
+    min-width: 66px !important;
+  }
 }

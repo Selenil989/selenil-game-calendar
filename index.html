@@ -23,7 +23,14 @@
 
     <!-- 상단 영역 -->
     <div class="top-bar">
-      <h1>게임 이벤트 스케줄</h1>
+      <div class="site-title-row">
+        <h1 id="calendarMainTitle">게임 이벤트 스케줄</h1>
+
+        <!-- 관리자 전용 캘린더 제목 / 상단 이미지 설정 버튼 -->
+        <button id="editCalendarSettingsBtn" class="edit-calendar-settings-btn hidden" title="캘린더 설정">
+          ✏️
+        </button>
+      </div>
 
       <!-- 로그인 / 로그아웃 / 일정 추가 버튼 -->
       <div class="top-buttons">
@@ -47,6 +54,9 @@
     <div id="loginStatus" class="login-status">
       방문자 모드
     </div>
+
+    <!-- 캘린더 상단 이미지 영역 -->
+    <div id="calendarHeroList" class="calendar-hero-list"></div>
 
     <!-- 일정 검색 영역 -->
     <div class="search-box">
@@ -104,52 +114,89 @@
 
       <h2>이벤트 편집</h2>
 
-      <!-- 제목 -->
-      <label>제목</label>
-      <input type="text" id="eventTitle" />
+      <details class="editor-section" open>
+        <summary>기본 정보</summary>
 
-      <!-- 카테고리 -->
-      <label>카테고리</label>
-      <select id="eventCategory">
-        <option value="업데이트">업데이트</option>
-        <option value="픽업">픽업</option>
-        <option value="복각">복각</option>
-        <option value="공방">공방</option>
-      </select>
+        <label>제목</label>
+        <input type="text" id="eventTitle" />
 
-      <!-- 시작일 -->
-      <label>시작일</label>
-      <input type="date" id="eventStart" />
+        <label>카테고리</label>
+        <select id="eventCategory">
+          <option value="업데이트">업데이트</option>
+          <option value="픽업">픽업</option>
+          <option value="복각">복각</option>
+          <option value="공방">공방</option>
+        </select>
 
-      <!-- 종료일 -->
-      <label>종료일</label>
-      <input type="date" id="eventEnd" />
+        <label>시작일</label>
+        <input type="date" id="eventStart" />
 
-      <!-- 설명 -->
-      <label>설명</label>
-      <textarea id="eventDescription" placeholder="이벤트 설명 입력"></textarea>
+        <label>종료일</label>
+        <input type="date" id="eventEnd" />
 
-      <!-- 이미지 업로드 -->
-      <label>이미지 업로드</label>
-      <input type="file" id="eventImage" />
+        <label>설명</label>
+        <textarea id="eventDescription" placeholder="이벤트 설명 입력"></textarea>
+      </details>
 
-      <!-- =========================
-     메인 이벤트 이미지 위치 조절
-      ========================= -->
+      <details class="editor-section hero-style-section">
+        <summary>메인 이벤트 텍스트 스타일</summary>
 
-      <label>이미지 가로 위치</label>
-      <input type="range" id="eventImagePosX" min="0" max="100" value="50" />
+        <div class="compact-style-grid">
+          <div>
+            <label>텍스트 색상</label>
+            <input type="color" id="eventTextColor" value="#ffffff" />
+          </div>
 
-      <label>이미지 세로 위치</label>
-      <input type="range" id="eventImagePosY" min="0" max="100" value="50" />
+          <div>
+            <label>배경색</label>
+            <input type="color" id="eventTextBgColor" value="#000000" />
+          </div>
+        </div>
 
-      <!-- =========================
-           메인 이벤트 이미지 확대
-      ========================= -->
+        <label>배경 투명도</label>
+        <input type="range" id="eventTextBgAlpha" min="0" max="100" value="35" />
 
-      <label>이미지 확대</label>
-      <input type="range" id="eventImageZoom" min="100" max="200" value="100" />
+        <label>텍스트 크기</label>
+        <input type="range" id="eventTextSize" min="9" max="28" value="13" />
+      </details>
 
+      <details class="editor-section hero-style-section image-style-section">
+        <summary>메인 이미지</summary>
+
+        <div class="hero-editor-card">
+          <label>이미지 업로드</label>
+          <input type="file" id="eventImage" />
+        </div>
+
+        <label>이미지 가로 위치</label>
+        <input type="range" id="eventImagePosX" min="0" max="100" value="50" />
+
+        <label>이미지 세로 위치</label>
+        <input type="range" id="eventImagePosY" min="0" max="100" value="50" />
+
+        <label>이미지 확대</label>
+        <input type="range" id="eventImageZoom" min="100" max="200" value="100" />
+      </details>
+
+      <details class="editor-section hero-style-section image-style-section">
+        <summary>메인 배너 안 하위 이벤트 이미지</summary>
+
+        <div class="hero-editor-card">
+          <label>하위 이벤트 선택</label>
+          <select id="mainSubCalendarSelect">
+            <option value="">하위 이벤트 없음</option>
+          </select>
+        </div>
+
+        <label>하위 배너 이미지 가로 위치</label>
+        <input type="range" id="mainSubCalendarImagePosX" min="0" max="100" value="50" />
+
+        <label>하위 배너 이미지 세로 위치</label>
+        <input type="range" id="mainSubCalendarImagePosY" min="0" max="100" value="50" />
+
+        <label>하위 배너 이미지 확대</label>
+        <input type="range" id="mainSubCalendarImageZoom" min="100" max="200" value="100" />
+      </details>
 
       <div class="buttons">
 
@@ -235,47 +282,69 @@
 
       <h2>하위 이벤트 편집</h2>
 
-      <label>제목</label>
-      <input type="text" id="subEventTitle" />
+      <details class="editor-section" open>
+        <summary>기본 정보</summary>
 
-      <label>카테고리</label>
-      <select id="subEventCategory">
-        <option value="업데이트">업데이트</option>
-        <option value="픽업">픽업</option>
-        <option value="복각">복각</option>
-        <option value="공방">공방</option>
-      </select>
+        <label>제목</label>
+        <input type="text" id="subEventTitle" />
 
-      <label>시작일</label>
-      <input type="date" id="subEventStart" />
+        <label>카테고리</label>
+        <select id="subEventCategory">
+          <option value="업데이트">업데이트</option>
+          <option value="픽업">픽업</option>
+          <option value="복각">복각</option>
+          <option value="공방">공방</option>
+        </select>
 
-      <label>종료일</label>
-      <input type="date" id="subEventEnd" />
+        <label>시작일</label>
+        <input type="date" id="subEventStart" />
 
-      <label>설명</label>
-      <textarea id="subEventDescription" placeholder="하위 이벤트 설명 입력"></textarea>
+        <label>종료일</label>
+        <input type="date" id="subEventEnd" />
 
-      <label>이미지 업로드</label>
-      <input type="file" id="subEventImage" />
+        <label>설명</label>
+        <textarea id="subEventDescription" placeholder="하위 이벤트 설명 입력"></textarea>
+      </details>
 
-      <!-- =========================
-     하위 이벤트 이미지 위치 조절
-      ========================= -->
+      <details class="editor-section hero-style-section">
+        <summary>서브 이벤트 텍스트 스타일</summary>
 
-      <label>이미지 가로 위치</label>
-      <input type="range" id="subImagePosX" min="0" max="100" value="50" />
+        <div class="compact-style-grid">
+          <div>
+            <label>텍스트 색상</label>
+            <input type="color" id="subTextColor" value="#ffffff" />
+          </div>
 
-      <label>이미지 세로 위치</label>
-      <input type="range" id="subImagePosY" min="0" max="100" value="50" />
+          <div>
+            <label>배경색</label>
+            <input type="color" id="subTextBgColor" value="#000000" />
+          </div>
+        </div>
 
-      <!-- =========================
-           하위 이벤트 이미지 확대
-      ========================= -->
+        <label>배경 투명도</label>
+        <input type="range" id="subTextBgAlpha" min="0" max="100" value="35" />
 
-      <label>이미지 확대</label>
-      <input type="range" id="subImageZoom" min="100" max="200" value="100" />
+        <label>텍스트 크기</label>
+        <input type="range" id="subTextSize" min="9" max="28" value="13" />
+      </details>
 
+      <details class="editor-section hero-style-section image-style-section">
+        <summary>서브 이벤트 이미지</summary>
 
+        <div class="hero-editor-card">
+          <label>이미지 업로드</label>
+          <input type="file" id="subEventImage" />
+        </div>
+
+        <label>이미지 가로 위치</label>
+        <input type="range" id="subImagePosX" min="0" max="100" value="50" />
+
+        <label>이미지 세로 위치</label>
+        <input type="range" id="subImagePosY" min="0" max="100" value="50" />
+
+        <label>이미지 확대</label>
+        <input type="range" id="subImageZoom" min="100" max="200" value="100" />
+      </details>
 
       <div class="buttons">
 
@@ -288,6 +357,114 @@
         </button>
 
         <button id="closeSubEventBtn">
+          닫기
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+  <!-- 캘린더 제목 / 상단 이미지 / 텍스트 스타일 설정창 -->
+  <div id="calendarSettingsModal" class="modal hidden">
+
+    <div class="modal-content calendar-settings-content">
+
+      <h2>캘린더 설정</h2>
+
+      <details class="editor-section" open>
+        <summary>캘린더 이름</summary>
+
+        <label>캘린더 이름</label>
+        <input type="text" id="calendarTitleInput" placeholder="캘린더 이름 입력" />
+      </details>
+
+      <details class="editor-section hero-style-section calendar-hero-upload-section" open>
+        <summary>상단 이미지 / 텍스트</summary>
+
+        <p class="settings-help-text">
+          최대 5개까지 등록 가능. 선택한 이미지 1개만 편집합니다.
+        </p>
+
+        <div class="hero-slot-toolbar">
+          <select id="calendarHeroSelect">
+            <option value="">상단 이미지 없음</option>
+          </select>
+
+          <button type="button" id="addCalendarHeroBtn" class="hero-mini-btn">
+            + 이미지 추가
+          </button>
+        </div>
+
+        <div id="calendarHeroEditor" class="single-hero-editor hidden">
+
+          <div class="hero-editor-preview-card">
+            <div class="hero-editor-preview" id="calendarHeroEditorPreview">
+              <span class="hero-editor-empty">미리보기</span>
+            </div>
+          </div>
+
+          <div class="hero-editor-card">
+            <label>이미지 업로드</label>
+            <input type="file" id="calendarHeroImageInput" accept="image/*" />
+          </div>
+
+          <label>텍스트</label>
+          <input type="text" id="calendarHeroTextInput" placeholder="상단 이미지 텍스트" />
+
+          <label>이미지 가로 위치</label>
+          <input type="range" id="calendarHeroPosX" min="0" max="100" value="50" />
+
+          <label>이미지 세로 위치</label>
+          <input type="range" id="calendarHeroPosY" min="0" max="100" value="50" />
+
+          <label>이미지 확대</label>
+          <input type="range" id="calendarHeroZoom" min="100" max="200" value="100" />
+
+          <div class="compact-style-grid hero-single-style-grid">
+            <div>
+              <label>텍스트 색상</label>
+              <input type="color" id="calendarHeroTextColor" value="#ffffff" />
+            </div>
+
+            <div>
+              <label>배경색</label>
+              <input type="color" id="calendarHeroTextBgColor" value="#000000" />
+            </div>
+          </div>
+
+          <label>배경 투명도</label>
+          <input type="range" id="calendarHeroTextBgAlpha" min="0" max="100" value="35" />
+
+          <label>텍스트 크기</label>
+          <input type="range" id="calendarHeroTextSize" min="9" max="32" value="13" />
+
+          <button type="button" id="deleteCalendarHeroBtn" class="hero-delete-btn">
+            선택 이미지 삭제
+          </button>
+
+        </div>
+      </details>
+
+      <!-- 전체 텍스트 기본 스타일 값은 내부 기본값으로 유지합니다. -->
+      <input type="hidden" id="defaultTextColorInput" value="#ffffff" />
+      <input type="hidden" id="defaultTextBgColorInput" value="#000000" />
+      <input type="hidden" id="defaultTextBgAlphaInput" value="35" />
+      <input type="hidden" id="defaultTextSizeInput" value="13" />
+
+      <div class="buttons">
+
+        <button id="saveCalendarSettingsBtn">
+          저장
+        </button>
+
+        <button id="closeCalendarSettingsBtn">
           닫기
         </button>
 

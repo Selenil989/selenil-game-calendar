@@ -38,7 +38,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   function setValue(el, value) {
     if (el) {
-      el.value = value || "";
+      el.value = value ?? "";
+
+      if (el.type === "range") {
+        const numberInput =
+          el.closest(".range-number-row")
+            ?.querySelector(".range-number-input");
+
+        if (numberInput) {
+          numberInput.value = el.value;
+        }
+      }
     }
   }
 
@@ -127,6 +137,34 @@ document.addEventListener("DOMContentLoaded", async function () {
   const eventImageZoom =
     getEl("eventImageZoom");
 
+  const eventTextColor =
+    getEl("eventTextColor");
+
+  const eventTextBgColor =
+    getEl("eventTextBgColor");
+
+  const eventTextBgAlpha =
+    getEl("eventTextBgAlpha");
+
+  const eventTextSize =
+    getEl("eventTextSize");
+
+  // =========================
+  // 메인 이벤트 안 하위 이벤트 배너 이미지 조절 UI
+  // =========================
+
+  const mainSubCalendarSelect =
+    getEl("mainSubCalendarSelect");
+
+  const mainSubCalendarImagePosX =
+    getEl("mainSubCalendarImagePosX");
+
+  const mainSubCalendarImagePosY =
+    getEl("mainSubCalendarImagePosY");
+
+  const mainSubCalendarImageZoom =
+    getEl("mainSubCalendarImageZoom");
+
   const saveBtn =
     getEl("saveBtn");
 
@@ -147,6 +185,97 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const editMainEventBtn =
     getEl("editMainEventBtn");
+
+  // =========================
+  // 캘린더 설정 요소
+  // =========================
+
+  const calendarMainTitle =
+    getEl("calendarMainTitle");
+
+  const editCalendarSettingsBtn =
+    getEl("editCalendarSettingsBtn");
+
+  const calendarSettingsModal =
+    getEl("calendarSettingsModal");
+
+  const calendarTitleInput =
+    getEl("calendarTitleInput");
+
+  const calendarHeroList =
+    getEl("calendarHeroList");
+
+  const saveCalendarSettingsBtn =
+    getEl("saveCalendarSettingsBtn");
+
+  const closeCalendarSettingsBtn =
+    getEl("closeCalendarSettingsBtn");
+
+  const defaultTextColorInput =
+    getEl("defaultTextColorInput");
+
+  const defaultTextBgColorInput =
+    getEl("defaultTextBgColorInput");
+
+  const defaultTextBgAlphaInput =
+    getEl("defaultTextBgAlphaInput");
+
+  const defaultTextSizeInput =
+    getEl("defaultTextSizeInput");
+
+  const heroTextColorInput =
+    getEl("heroTextColorInput");
+
+  const heroTextBgColorInput =
+    getEl("heroTextBgColorInput");
+
+  const heroTextBgAlphaInput =
+    getEl("heroTextBgAlphaInput");
+
+  const heroTextSizeInput =
+    getEl("heroTextSizeInput");
+
+  const calendarHeroSelect =
+    getEl("calendarHeroSelect");
+
+  const addCalendarHeroBtn =
+    getEl("addCalendarHeroBtn");
+
+  const deleteCalendarHeroBtn =
+    getEl("deleteCalendarHeroBtn");
+
+  const calendarHeroEditor =
+    getEl("calendarHeroEditor");
+
+  const calendarHeroEditorPreview =
+    getEl("calendarHeroEditorPreview");
+
+  const calendarHeroImageInput =
+    getEl("calendarHeroImageInput");
+
+  const calendarHeroTextInput =
+    getEl("calendarHeroTextInput");
+
+  const calendarHeroPosX =
+    getEl("calendarHeroPosX");
+
+  const calendarHeroPosY =
+    getEl("calendarHeroPosY");
+
+  const calendarHeroZoom =
+    getEl("calendarHeroZoom");
+
+  const calendarHeroTextColor =
+    getEl("calendarHeroTextColor");
+
+  const calendarHeroTextBgColor =
+    getEl("calendarHeroTextBgColor");
+
+  const calendarHeroTextBgAlpha =
+    getEl("calendarHeroTextBgAlpha");
+
+  const calendarHeroTextSize =
+    getEl("calendarHeroTextSize");
 
   // =========================
   // 상세 보기 모달 요소
@@ -222,7 +351,19 @@ document.addEventListener("DOMContentLoaded", async function () {
   const subImageZoom =
     getEl("subImageZoom");
 
-      // =========================
+  const subTextColor =
+    getEl("subTextColor");
+
+  const subTextBgColor =
+    getEl("subTextBgColor");
+
+  const subTextBgAlpha =
+    getEl("subTextBgAlpha");
+
+  const subTextSize =
+    getEl("subTextSize");
+
+  // =========================
   // 현재 편집 중인 메인 이벤트의
   // 실제 캘린더 이미지 찾기
   // =========================
@@ -368,6 +509,35 @@ document.addEventListener("DOMContentLoaded", async function () {
     updateMainPreview
   );
 
+  mainSubCalendarSelect?.addEventListener(
+    "change",
+    () => {
+
+      currentMainSubCalendarSubId =
+        safeValue(mainSubCalendarSelect);
+
+      applySelectedMainSubCalendarValues();
+
+      updateSelectedMainSubCalendarPreview();
+
+    }
+  );
+
+  mainSubCalendarImagePosX?.addEventListener(
+    "input",
+    updateSelectedMainSubCalendarPreview
+  );
+
+  mainSubCalendarImagePosY?.addEventListener(
+    "input",
+    updateSelectedMainSubCalendarPreview
+  );
+
+  mainSubCalendarImageZoom?.addEventListener(
+    "input",
+    updateSelectedMainSubCalendarPreview
+  );
+
   subImagePosX?.addEventListener(
     "input",
     updateSubPreview
@@ -381,6 +551,216 @@ document.addEventListener("DOMContentLoaded", async function () {
   subImageZoom?.addEventListener(
     "input",
     updateSubPreview
+  );
+
+  // =========================
+  // range 슬라이더 옆 숫자 입력칸 자동 생성
+  // 슬라이더와 숫자 입력이 서로 동기화됨
+  // =========================
+
+  function setupRangeNumberInputs() {
+
+    const rangeInputs =
+      Array.from(
+        document.querySelectorAll('input[type="range"]')
+      );
+
+    rangeInputs.forEach(rangeInput => {
+
+      if (!rangeInput || rangeInput.dataset.numberLinked === "true") {
+        return;
+      }
+
+      const wrapper =
+        document.createElement("div");
+
+      wrapper.className =
+        "range-number-row";
+
+      const numberInput =
+        document.createElement("input");
+
+      numberInput.type =
+        "number";
+
+      numberInput.className =
+        "range-number-input";
+
+      numberInput.min =
+        rangeInput.min || "0";
+
+      numberInput.max =
+        rangeInput.max || "100";
+
+      numberInput.step =
+        rangeInput.step || "1";
+
+      numberInput.value =
+        rangeInput.value || rangeInput.min || "0";
+
+      rangeInput.parentNode.insertBefore(
+        wrapper,
+        rangeInput
+      );
+
+      wrapper.appendChild(rangeInput);
+      wrapper.appendChild(numberInput);
+
+      rangeInput.dataset.numberLinked =
+        "true";
+
+      const clampValue = (value) => {
+
+        const min =
+          Number(rangeInput.min || numberInput.min || 0);
+
+        const max =
+          Number(rangeInput.max || numberInput.max || 100);
+
+        const numericValue =
+          Number(value);
+
+        if (Number.isNaN(numericValue)) {
+          return min;
+        }
+
+        return Math.min(
+          max,
+          Math.max(min, numericValue)
+        );
+
+      };
+
+      rangeInput.addEventListener(
+        "input",
+        () => {
+
+          numberInput.value =
+            rangeInput.value;
+
+        }
+      );
+
+      numberInput.addEventListener(
+        "input",
+        () => {
+
+          const nextValue =
+            clampValue(numberInput.value);
+
+          rangeInput.value =
+            nextValue;
+
+          numberInput.value =
+            nextValue;
+
+          rangeInput.dispatchEvent(
+            new Event("input", {
+              bubbles: true,
+            })
+          );
+
+        }
+      );
+
+    });
+
+  }
+
+  setupRangeNumberInputs();
+
+  [
+    eventTextColor,
+    eventTextBgColor,
+    eventTextBgAlpha,
+    eventTextSize,
+  ].forEach(input => {
+
+    input?.addEventListener(
+      "input",
+      updateEventTextStylePreview
+    );
+
+  });
+
+  [
+    subTextColor,
+    subTextBgColor,
+    subTextBgAlpha,
+    subTextSize,
+  ].forEach(input => {
+
+    input?.addEventListener(
+      "input",
+      updateSubTextStylePreview
+    );
+
+  });
+
+  [
+    defaultTextColorInput,
+    defaultTextBgColorInput,
+    defaultTextBgAlphaInput,
+    defaultTextSizeInput,
+    heroTextColorInput,
+    heroTextBgColorInput,
+    heroTextBgAlphaInput,
+    heroTextSizeInput,
+    calendarTitleInput,
+  ].forEach(input => {
+
+    input?.addEventListener(
+      "input",
+      updateCalendarSettingsPreview
+    );
+
+  });
+
+  [
+    calendarHeroTextInput,
+    calendarHeroPosX,
+    calendarHeroPosY,
+    calendarHeroZoom,
+    calendarHeroTextColor,
+    calendarHeroTextBgColor,
+    calendarHeroTextBgAlpha,
+    calendarHeroTextSize,
+  ].forEach(input => {
+
+    input?.addEventListener(
+      "input",
+      updateSelectedHeroItemFromEditor
+    );
+
+  });
+
+  calendarHeroSelect?.addEventListener(
+    "change",
+    () => {
+      selectedHeroIndex =
+        Number(safeValue(calendarHeroSelect, -1));
+
+      renderHeroEditor();
+    }
+  );
+
+  addCalendarHeroBtn?.addEventListener(
+    "click",
+    () => {
+      addHeroItem();
+    }
+  );
+
+  deleteCalendarHeroBtn?.addEventListener(
+    "click",
+    () => {
+      deleteSelectedHeroItem();
+    }
+  );
+
+  calendarHeroImageInput?.addEventListener(
+    "change",
+    updateSelectedHeroImagePreview
   );
 
 
@@ -413,6 +793,22 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let uploadedColor = "#1f2937";
 
+  let calendarSettings = {
+    title: "게임 이벤트 스케줄",
+    banner_items: [],
+    default_text_color: "#ffffff",
+    default_text_bg_color: "#000000",
+    default_text_bg_alpha: 0.35,
+    default_text_size: 13,
+    hero_text_color: "#ffffff",
+    hero_text_bg_color: "#000000",
+    hero_text_bg_alpha: 0.35,
+    hero_text_size: 13,
+  };
+
+  let editingHeroItems = [];
+  let selectedHeroIndex = -1;
+
 
 
   // =========================
@@ -443,7 +839,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let allEvents = [];
 
+  /* 원본 메인 이벤트 목록 */
+  let allMainEvents = [];
+
   let currentSubEvents = [];
+
+  /* 메인 이벤트 편집창에서 조절 중인 하위 이벤트 목록 */
+  let currentMainSubEvents = [];
+
+  let currentMainSubCalendarSubId = "";
 
   // =========================
   // 메인 이벤트 실시간 편집 상태
@@ -460,6 +864,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   let originalSubImagePosX = 50;
   let originalSubImagePosY = 50;
   let originalSubImageZoom = 100;
+
+  /* 실시간 텍스트 스타일 미리보기 원복용 백업 */
+  let originalEventTextStyle = null;
+  let originalSubTextStyle = null;
 
 
 
@@ -511,6 +919,70 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
   // =========================
+  // FullCalendar 날짜 보정
+  // FullCalendar의 end는 화면에서 제외되는 날짜라서
+  // DB 종료일은 하루 더해서 표시하고, 저장할 때는 다시 하루 뺌
+  // =========================
+
+  function parseLocalDate(dateText) {
+
+    if (!dateText) return null;
+
+    return new Date(`${dateText}T00:00:00`);
+
+  }
+
+  function addOneDay(dateText) {
+
+    if (!dateText) return null;
+
+    const date =
+      parseLocalDate(dateText);
+
+    date.setDate(
+      date.getDate() + 1
+    );
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(date.getMonth() + 1).padStart(2, "0");
+
+    const day =
+      String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+
+  }
+
+  function subtractOneDay(dateText) {
+
+    if (!dateText) return null;
+
+    const date =
+      parseLocalDate(dateText);
+
+    date.setDate(
+      date.getDate() - 1
+    );
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(date.getMonth() + 1).padStart(2, "0");
+
+    const day =
+      String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+
+  }
+
+
+
+  // =========================
   // 관리자 UI 적용
   // =========================
 
@@ -531,6 +1003,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       addSubEventBtn?.classList.remove("hidden");
+      editCalendarSettingsBtn?.classList.remove("hidden");
 
     } else {
 
@@ -545,6 +1018,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       hide(eventModal);
       addSubEventBtn?.classList.add("hidden");
+      editCalendarSettingsBtn?.classList.add("hidden");
 
     }
 
@@ -574,6 +1048,1112 @@ document.addEventListener("DOMContentLoaded", async function () {
       data.session?.user || null;
 
     applyAuthUI();
+
+  }
+
+
+
+  // =========================
+  // 색상 + 투명도 rgba 변환
+  // =========================
+
+  function hexToRgba(hex, alpha) {
+
+    const cleanHex =
+      (hex || "#000000").replace("#", "");
+
+    const r =
+      parseInt(cleanHex.substring(0, 2), 16);
+
+    const g =
+      parseInt(cleanHex.substring(2, 4), 16);
+
+    const b =
+      parseInt(cleanHex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+  }
+
+
+
+
+  // =========================
+  // 텍스트 스타일 유틸
+  // 텍스트가 비어있으면 배경도 표시하지 않음
+  // =========================
+
+  function getDefaultTextStyle() {
+
+    // 모든 기본 텍스트 스타일은 상단 이미지 텍스트 기본 스타일을 기준으로 통일
+    return {
+      textColor:
+        calendarSettings.hero_text_color
+        || calendarSettings.default_text_color
+        || "#ffffff",
+
+      bgColor:
+        calendarSettings.hero_text_bg_color
+        || calendarSettings.default_text_bg_color
+        || "#000000",
+
+      bgAlpha:
+        Number(
+          calendarSettings.hero_text_bg_alpha
+          ?? calendarSettings.default_text_bg_alpha
+          ?? 0.35
+        ),
+
+      textSize:
+        Number(
+          calendarSettings.hero_text_size
+          ?? calendarSettings.default_text_size
+          ?? 13
+        ),
+    };
+
+  }
+
+  function getHeroTextStyle() {
+
+    return {
+      textColor:
+        calendarSettings.hero_text_color
+        || calendarSettings.default_text_color
+        || "#ffffff",
+
+      bgColor:
+        calendarSettings.hero_text_bg_color
+        || calendarSettings.default_text_bg_color
+        || "#000000",
+
+      bgAlpha:
+        Number(
+          calendarSettings.hero_text_bg_alpha
+          ?? calendarSettings.default_text_bg_alpha
+          ?? 0.35
+        ),
+
+      textSize:
+        Number(
+          calendarSettings.hero_text_size
+          ?? calendarSettings.default_text_size
+          ?? 13
+        ),
+    };
+
+  }
+
+  function makeTextStyleVars(style = {}) {
+
+    const defaults =
+      getDefaultTextStyle();
+
+    const textColor =
+      style.textColor || defaults.textColor;
+
+    const bgColor =
+      style.bgColor || defaults.bgColor;
+
+    const bgAlpha =
+      Number(style.bgAlpha ?? defaults.bgAlpha);
+
+    const textSize =
+      Number(style.textSize ?? defaults.textSize);
+
+    return `--text-color: ${textColor}; --text-bg: ${hexToRgba(bgColor, bgAlpha)}; --text-size: ${textSize}px;`;
+
+  }
+
+  function textBoxHtml(className, text, style = {}) {
+
+    const safeText =
+      text || "";
+
+    if (!safeText.trim()) {
+      return "";
+    }
+
+    return `
+      <span
+        class="${className} text-style-box"
+        style="${makeTextStyleVars(style)}"
+      >
+        ${safeText}
+      </span>
+    `;
+
+  }
+
+  function getEventTextStyleFromProps(props = {}) {
+
+    return {
+      textColor:
+        props.textColor || props.text_color,
+
+      bgColor:
+        props.textBgColor || props.text_bg_color,
+
+      bgAlpha:
+        props.textBgAlpha ?? props.text_bg_alpha,
+
+      textSize:
+        props.textSize ?? props.text_size,
+    };
+
+  }
+
+  function applyTextStyleInputs(prefix, style = {}) {
+
+    const defaults =
+      getDefaultTextStyle();
+
+    const colorInput =
+      prefix === "event" ? eventTextColor : subTextColor;
+
+    const bgColorInput =
+      prefix === "event" ? eventTextBgColor : subTextBgColor;
+
+    const bgAlphaInput =
+      prefix === "event" ? eventTextBgAlpha : subTextBgAlpha;
+
+    const sizeInput =
+      prefix === "event" ? eventTextSize : subTextSize;
+
+    setValue(colorInput, style.textColor || defaults.textColor);
+    setValue(bgColorInput, style.bgColor || defaults.bgColor);
+    setValue(bgAlphaInput, Math.round(Number(style.bgAlpha ?? defaults.bgAlpha) * 100));
+    setValue(sizeInput, Number(style.textSize ?? defaults.textSize));
+
+  }
+
+  function readTextStyleInputs(prefix) {
+
+    const colorInput =
+      prefix === "event" ? eventTextColor : subTextColor;
+
+    const bgColorInput =
+      prefix === "event" ? eventTextBgColor : subTextBgColor;
+
+    const bgAlphaInput =
+      prefix === "event" ? eventTextBgAlpha : subTextBgAlpha;
+
+    const sizeInput =
+      prefix === "event" ? eventTextSize : subTextSize;
+
+    return {
+      textColor:
+        safeValue(colorInput, getDefaultTextStyle().textColor),
+
+      bgColor:
+        safeValue(bgColorInput, getDefaultTextStyle().bgColor),
+
+      bgAlpha:
+        Number(safeValue(bgAlphaInput, Math.round(getDefaultTextStyle().bgAlpha * 100))) / 100,
+
+      textSize:
+        Number(safeValue(sizeInput, getDefaultTextStyle().textSize)),
+    };
+
+  }
+
+
+  // =========================
+  // 텍스트 스타일 실시간 미리보기
+  // =========================
+
+  function normalizeHeroItems(items = []) {
+
+    return (Array.isArray(items) ? items : [])
+      .filter(item => item && (item.image || item.text))
+      .slice(0, 5)
+      .map(item => ({
+        image:
+          item.image || "",
+
+        text:
+          item.text || "",
+
+        pos_x:
+          item.pos_x ?? item.image_pos_x ?? 50,
+
+        pos_y:
+          item.pos_y ?? item.image_pos_y ?? 50,
+
+        zoom:
+          item.zoom ?? item.image_zoom ?? 100,
+
+        text_color:
+          item.text_color || "",
+
+        text_bg_color:
+          item.text_bg_color || "",
+
+        text_bg_alpha:
+          item.text_bg_alpha,
+
+        text_size:
+          item.text_size,
+      }));
+
+  }
+
+  function getHeroItemStyle(item = {}) {
+
+    const defaults =
+      getHeroTextStyle();
+
+    return {
+      textColor:
+        item.text_color || defaults.textColor,
+
+      bgColor:
+        item.text_bg_color || defaults.bgColor,
+
+      bgAlpha:
+        item.text_bg_alpha ?? defaults.bgAlpha,
+
+      textSize:
+        item.text_size ?? defaults.textSize,
+    };
+
+  }
+
+  function syncHeroEditorFilesClear() {
+
+    if (calendarHeroImageInput) {
+      calendarHeroImageInput.value = "";
+    }
+
+  }
+
+  function renderHeroSelect() {
+
+    if (!calendarHeroSelect) return;
+
+    calendarHeroSelect.innerHTML = "";
+
+    if (editingHeroItems.length === 0) {
+
+      const option =
+        document.createElement("option");
+
+      option.value = "-1";
+      option.textContent = "상단 이미지 없음";
+
+      calendarHeroSelect.appendChild(option);
+
+      selectedHeroIndex = -1;
+
+      return;
+
+    }
+
+    editingHeroItems.forEach((item, index) => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = String(index);
+      option.textContent =
+        `이미지 ${index + 1}${item.text ? ` - ${item.text}` : ""}`;
+
+      calendarHeroSelect.appendChild(option);
+
+    });
+
+    if (
+      selectedHeroIndex < 0 ||
+      selectedHeroIndex >= editingHeroItems.length
+    ) {
+      selectedHeroIndex = 0;
+    }
+
+    calendarHeroSelect.value =
+      String(selectedHeroIndex);
+
+  }
+
+  function renderHeroEditor() {
+
+    renderHeroSelect();
+
+    const item =
+      editingHeroItems[selectedHeroIndex];
+
+    if (!item) {
+
+      hide(calendarHeroEditor);
+      syncHeroEditorFilesClear();
+      renderHeroEditorPreview();
+
+      return;
+
+    }
+
+    show(calendarHeroEditor);
+
+    const style =
+      getHeroItemStyle(item);
+
+    setValue(calendarHeroTextInput, item.text || "");
+    setValue(calendarHeroPosX, item.pos_x ?? 50);
+    setValue(calendarHeroPosY, item.pos_y ?? 50);
+    setValue(calendarHeroZoom, item.zoom ?? 100);
+    setValue(calendarHeroTextColor, style.textColor);
+    setValue(calendarHeroTextBgColor, style.bgColor);
+    setValue(calendarHeroTextBgAlpha, Math.round(Number(style.bgAlpha) * 100));
+    setValue(calendarHeroTextSize, style.textSize);
+
+    syncHeroEditorFilesClear();
+    renderHeroEditorPreview();
+
+  }
+
+  function renderHeroEditorPreview() {
+
+    if (!calendarHeroEditorPreview) return;
+
+    const item =
+      editingHeroItems[selectedHeroIndex];
+
+    if (!item || !item.image) {
+
+      calendarHeroEditorPreview.innerHTML =
+        `<span class="hero-editor-empty">미리보기</span>`;
+
+      return;
+
+    }
+
+    const posX =
+      item.pos_x ?? 50;
+
+    const posY =
+      item.pos_y ?? 50;
+
+    const zoom =
+      item.zoom ?? 100;
+
+    calendarHeroEditorPreview.innerHTML =
+      `
+        <img
+          src="${item.image}"
+          alt=""
+          style="
+            object-position: ${posX}% ${posY}%;
+            transform: scale(${Number(zoom) / 100});
+            transform-origin: ${posX}% ${posY}%;
+          "
+        />
+
+        ${item.text?.trim()
+          ? `
+            <div
+              class="calendar-hero-text text-style-box"
+              style="${makeTextStyleVars(getHeroItemStyle(item))}"
+            >
+              ${item.text}
+            </div>
+          `
+          : ""
+        }
+      `;
+
+  }
+
+  function updateSelectedHeroItemFromEditor() {
+
+    const item =
+      editingHeroItems[selectedHeroIndex];
+
+    if (!item) return;
+
+    item.text =
+      safeValue(calendarHeroTextInput, "");
+
+    item.pos_x =
+      Number(safeValue(calendarHeroPosX, 50));
+
+    item.pos_y =
+      Number(safeValue(calendarHeroPosY, 50));
+
+    item.zoom =
+      Number(safeValue(calendarHeroZoom, 100));
+
+    item.text_color =
+      safeValue(calendarHeroTextColor, getHeroTextStyle().textColor);
+
+    item.text_bg_color =
+      safeValue(calendarHeroTextBgColor, getHeroTextStyle().bgColor);
+
+    item.text_bg_alpha =
+      Number(safeValue(calendarHeroTextBgAlpha, 35)) / 100;
+
+    item.text_size =
+      Number(safeValue(calendarHeroTextSize, getHeroTextStyle().textSize));
+
+    renderHeroSelect();
+    renderHeroEditorPreview();
+    renderCalendarHeroPreview();
+
+  }
+
+  function updateSelectedHeroImagePreview() {
+
+    const item =
+      editingHeroItems[selectedHeroIndex];
+
+    if (!item) return;
+
+    const file =
+      calendarHeroImageInput?.files[0];
+
+    if (!file) return;
+
+    item.localFile = file;
+    item.image = URL.createObjectURL(file);
+
+    renderHeroEditorPreview();
+    renderCalendarHeroPreview();
+
+  }
+
+  function addHeroItem() {
+
+    if (editingHeroItems.length >= 5) {
+      alert("상단 이미지는 최대 5개까지 추가할 수 있습니다.");
+      return;
+    }
+
+    const defaults =
+      getHeroTextStyle();
+
+    editingHeroItems.push({
+      image: "",
+      text: "",
+      pos_x: 50,
+      pos_y: 50,
+      zoom: 100,
+      text_color: defaults.textColor,
+      text_bg_color: defaults.bgColor,
+      text_bg_alpha: defaults.bgAlpha,
+      text_size: defaults.textSize,
+    });
+
+    selectedHeroIndex =
+      editingHeroItems.length - 1;
+
+    renderHeroEditor();
+    renderCalendarHeroPreview();
+
+  }
+
+  function deleteSelectedHeroItem() {
+
+    if (selectedHeroIndex < 0) return;
+
+    editingHeroItems.splice(selectedHeroIndex, 1);
+
+    if (editingHeroItems.length === 0) {
+      selectedHeroIndex = -1;
+    } else if (selectedHeroIndex >= editingHeroItems.length) {
+      selectedHeroIndex = editingHeroItems.length - 1;
+    }
+
+    renderHeroEditor();
+    renderCalendarHeroPreview();
+
+  }
+
+  function updateCalendarSettingsPreview() {
+
+    const previewTitle =
+      safeValue(calendarTitleInput, "게임 이벤트 스케줄").trim()
+      || "게임 이벤트 스케줄";
+
+    if (calendarMainTitle) {
+      calendarMainTitle.textContent =
+        previewTitle;
+    }
+
+    const heroTextColor =
+      safeValue(heroTextColorInput, "#ffffff");
+
+    const heroBgColor =
+      safeValue(heroTextBgColorInput, "#000000");
+
+    const heroAlpha =
+      Number(safeValue(heroTextBgAlphaInput, 35)) / 100;
+
+    const heroTextSize =
+      Number(safeValue(heroTextSizeInput, 13));
+
+    document.documentElement.style.setProperty(
+      "--default-text-color",
+      heroTextColor
+    );
+
+    document.documentElement.style.setProperty(
+      "--default-text-bg",
+      hexToRgba(heroBgColor, heroAlpha)
+    );
+
+    document.documentElement.style.setProperty(
+      "--default-text-size",
+      `${heroTextSize}px`
+    );
+
+    setValue(defaultTextColorInput, heroTextColor);
+    setValue(defaultTextBgColorInput, heroBgColor);
+    setValue(defaultTextBgAlphaInput, Math.round(heroAlpha * 100));
+    setValue(defaultTextSizeInput, heroTextSize);
+
+    renderHeroEditorPreview();
+    renderCalendarHeroPreview();
+
+    applySearchFilter();
+
+    if (currentDetailEvent) {
+      openDetailModal(currentDetailEvent);
+    }
+
+  }
+
+  function renderCalendarHeroPreview() {
+
+    if (!calendarHeroList) return;
+
+    calendarHeroList.innerHTML = "";
+
+    editingHeroItems
+      .filter(item => item?.image)
+      .slice(0, 5)
+      .forEach(item => {
+
+        const heroItem =
+          document.createElement("div");
+
+        const posX =
+          item.pos_x ?? 50;
+
+        const posY =
+          item.pos_y ?? 50;
+
+        const zoom =
+          item.zoom ?? 100;
+
+        heroItem.className =
+          "calendar-hero-item";
+
+        heroItem.innerHTML =
+          `
+            <img
+              src="${item.image}"
+              alt=""
+              style="
+                object-position: ${posX}% ${posY}%;
+                transform: scale(${Number(zoom) / 100});
+                transform-origin: ${posX}% ${posY}%;
+              "
+            />
+
+            ${item.text?.trim()
+              ? `
+                <div
+                  class="calendar-hero-text text-style-box"
+                  style="${makeTextStyleVars(getHeroItemStyle(item))}"
+                >
+                  ${item.text}
+                </div>
+              `
+              : ""
+            }
+          `;
+
+        calendarHeroList.appendChild(heroItem);
+
+      });
+
+  }
+
+  function updateEventTextStylePreview() {
+
+    if (!currentEvent) return;
+
+    const style =
+      readTextStyleInputs("event");
+
+    allMainEvents =
+      allMainEvents.map(event => {
+
+        if (event.id !== currentEvent.id) {
+          return event;
+        }
+
+        return {
+          ...event,
+
+          extendedProps: {
+            ...event.extendedProps,
+
+            textColor: style.textColor,
+            textBgColor: style.bgColor,
+            textBgAlpha: style.bgAlpha,
+            textSize: style.textSize,
+          },
+        };
+
+      });
+
+    currentEvent.setExtendedProp(
+      "textColor",
+      style.textColor
+    );
+
+    currentEvent.setExtendedProp(
+      "textBgColor",
+      style.bgColor
+    );
+
+    currentEvent.setExtendedProp(
+      "textBgAlpha",
+      style.bgAlpha
+    );
+
+    currentEvent.setExtendedProp(
+      "textSize",
+      style.textSize
+    );
+
+    applySearchFilter();
+
+  }
+
+  function updateSubTextStylePreview() {
+
+    if (!currentSubEvent) return;
+
+    const style =
+      readTextStyleInputs("sub");
+
+    currentSubEvent = {
+      ...currentSubEvent,
+      text_color: style.textColor,
+      text_bg_color: style.bgColor,
+      text_bg_alpha: style.bgAlpha,
+      text_size: style.textSize,
+    };
+
+    currentSubEvents =
+      currentSubEvents.map(subEvent => {
+
+        if (subEvent.id !== currentSubEvent.id) {
+          return subEvent;
+        }
+
+        return {
+          ...subEvent,
+          text_color: style.textColor,
+          text_bg_color: style.bgColor,
+          text_bg_alpha: style.bgAlpha,
+          text_size: style.textSize,
+        };
+
+      });
+
+    renderSubEvents();
+
+    allMainEvents =
+      allMainEvents.map(event => {
+
+        if (event.id !== currentDetailEvent?.id) {
+          return event;
+        }
+
+        return {
+          ...event,
+
+          extendedProps: {
+            ...event.extendedProps,
+            subEvents: currentSubEvents,
+          },
+        };
+
+      });
+
+    applySearchFilter();
+
+  }
+
+  function restoreEventTextStylePreview() {
+
+    if (!currentEvent || !originalEventTextStyle) return;
+
+    allMainEvents =
+      allMainEvents.map(event => {
+
+        if (event.id !== currentEvent.id) {
+          return event;
+        }
+
+        return {
+          ...event,
+
+          extendedProps: {
+            ...event.extendedProps,
+
+            textColor: originalEventTextStyle.textColor,
+            textBgColor: originalEventTextStyle.bgColor,
+            textBgAlpha: originalEventTextStyle.bgAlpha,
+            textSize: originalEventTextStyle.textSize,
+          },
+        };
+
+      });
+
+    applySearchFilter();
+
+    originalEventTextStyle = null;
+
+  }
+
+  function restoreSubTextStylePreview() {
+
+    if (!currentSubEvent || !originalSubTextStyle) return;
+
+    currentSubEvents =
+      currentSubEvents.map(subEvent => {
+
+        if (subEvent.id !== currentSubEvent.id) {
+          return subEvent;
+        }
+
+        return {
+          ...subEvent,
+          text_color: originalSubTextStyle.textColor,
+          text_bg_color: originalSubTextStyle.bgColor,
+          text_bg_alpha: originalSubTextStyle.bgAlpha,
+          text_size: originalSubTextStyle.textSize,
+        };
+
+      });
+
+    renderSubEvents();
+
+    allMainEvents =
+      allMainEvents.map(event => {
+
+        if (event.id !== currentDetailEvent?.id) {
+          return event;
+        }
+
+        return {
+          ...event,
+
+          extendedProps: {
+            ...event.extendedProps,
+            subEvents: currentSubEvents,
+          },
+        };
+
+      });
+
+    applySearchFilter();
+
+    originalSubTextStyle = null;
+
+  }
+
+  // =========================
+  // 캘린더 설정 불러오기
+  // =========================
+
+  async function loadCalendarSettings() {
+
+    const { data, error } =
+      await supabaseClient
+        .from("calendar_settings")
+        .select("*")
+        .eq("id", "main")
+        .maybeSingle();
+
+    if (error) {
+
+      console.error(error);
+
+      return;
+
+    }
+
+    if (data) {
+
+      calendarSettings = {
+        ...calendarSettings,
+        ...data,
+        banner_items:
+          Array.isArray(data.banner_items)
+            ? data.banner_items
+            : [],
+      };
+
+    }
+
+    applyCalendarSettings();
+
+  }
+
+
+
+  // =========================
+  // 캘린더 설정 화면 반영
+  // =========================
+
+  function applyCalendarSettings() {
+
+    const title =
+      calendarSettings.title || "게임 이벤트 스케줄";
+
+    if (calendarMainTitle) {
+      calendarMainTitle.textContent =
+        title;
+    }
+
+    if (calendarTitleInput) {
+      calendarTitleInput.value =
+        title;
+    }
+
+    const heroStyle =
+      getHeroTextStyle();
+
+    document.documentElement.style.setProperty(
+      "--default-text-color",
+      heroStyle.textColor
+    );
+
+    document.documentElement.style.setProperty(
+      "--default-text-bg",
+      hexToRgba(heroStyle.bgColor, heroStyle.bgAlpha)
+    );
+
+    document.documentElement.style.setProperty(
+      "--default-text-size",
+      `${heroStyle.textSize}px`
+    );
+
+    setValue(defaultTextColorInput, heroStyle.textColor);
+    setValue(defaultTextBgColorInput, heroStyle.bgColor);
+    setValue(defaultTextBgAlphaInput, Math.round(heroStyle.bgAlpha * 100));
+    setValue(defaultTextSizeInput, heroStyle.textSize);
+
+    setValue(heroTextColorInput, heroStyle.textColor);
+    setValue(heroTextBgColorInput, heroStyle.bgColor);
+    setValue(heroTextBgAlphaInput, Math.round(heroStyle.bgAlpha * 100));
+    setValue(heroTextSizeInput, heroStyle.textSize);
+
+    editingHeroItems =
+      normalizeHeroItems(calendarSettings.banner_items || []);
+
+    selectedHeroIndex =
+      editingHeroItems.length > 0 ? 0 : -1;
+
+    renderHeroEditor();
+    renderCalendarHeroList();
+
+  }
+
+
+
+  // =========================
+  // 캘린더 상단 이미지 렌더링
+  // =========================
+
+  function renderCalendarHeroList() {
+
+    if (!calendarHeroList) return;
+
+    const items =
+      normalizeHeroItems(calendarSettings.banner_items || [])
+        .filter(item => item?.image)
+        .slice(0, 5);
+
+    calendarHeroList.innerHTML = "";
+
+    items.forEach(item => {
+
+      const heroItem =
+        document.createElement("div");
+
+      const posX =
+        item.pos_x ?? 50;
+
+      const posY =
+        item.pos_y ?? 50;
+
+      const zoom =
+        item.zoom ?? 100;
+
+      heroItem.className =
+        "calendar-hero-item";
+
+      heroItem.innerHTML =
+        `
+          <img
+            src="${item.image}"
+            alt=""
+            style="
+              object-position: ${posX}% ${posY}%;
+              transform: scale(${Number(zoom) / 100});
+              transform-origin: ${posX}% ${posY}%;
+            "
+          />
+
+          ${item.text?.trim()
+            ? `
+              <div
+                class="calendar-hero-text text-style-box"
+                style="${makeTextStyleVars(getHeroItemStyle(item))}"
+              >
+                ${item.text}
+              </div>
+            `
+            : ""
+          }
+        `;
+
+      calendarHeroList.appendChild(heroItem);
+
+    });
+
+  }
+
+
+
+  // =========================
+  // 캘린더 설정 저장
+  // =========================
+
+  async function saveCalendarSettings() {
+
+    if (!isAdmin) return;
+
+    updateSelectedHeroItemFromEditor();
+
+    const nextItems = [];
+
+    for (const item of editingHeroItems.slice(0, 5)) {
+
+      let image =
+        item.image || "";
+
+      if (item.localFile) {
+
+        const uploadedUrl =
+          await uploadImageToSupabase(item.localFile);
+
+        if (!uploadedUrl) return;
+
+        image =
+          uploadedUrl;
+
+      }
+
+      if (image || (item.text || "").trim()) {
+
+        nextItems.push({
+          image,
+          text:
+            item.text || "",
+          pos_x:
+            item.pos_x ?? 50,
+          pos_y:
+            item.pos_y ?? 50,
+          zoom:
+            item.zoom ?? 100,
+          text_color:
+            item.text_color || safeValue(heroTextColorInput, "#ffffff"),
+          text_bg_color:
+            item.text_bg_color || safeValue(heroTextBgColorInput, "#000000"),
+          text_bg_alpha:
+            item.text_bg_alpha ?? Number(safeValue(heroTextBgAlphaInput, 35)) / 100,
+          text_size:
+            item.text_size ?? Number(safeValue(heroTextSizeInput, 13)),
+        });
+
+      }
+
+    }
+
+    const nextSettings = {
+      id: "main",
+
+      title:
+        safeValue(calendarTitleInput, "게임 이벤트 스케줄").trim()
+        || "게임 이벤트 스케줄",
+
+      banner_items:
+        nextItems,
+
+      default_text_color:
+        safeValue(heroTextColorInput, "#ffffff"),
+
+      default_text_bg_color:
+        safeValue(heroTextBgColorInput, "#000000"),
+
+      default_text_bg_alpha:
+        Number(safeValue(heroTextBgAlphaInput, 35)) / 100,
+
+      default_text_size:
+        Number(safeValue(heroTextSizeInput, 13)),
+
+      hero_text_color:
+        safeValue(heroTextColorInput, "#ffffff"),
+
+      hero_text_bg_color:
+        safeValue(heroTextBgColorInput, "#000000"),
+
+      hero_text_bg_alpha:
+        Number(safeValue(heroTextBgAlphaInput, 35)) / 100,
+
+      hero_text_size:
+        Number(safeValue(heroTextSizeInput, 13)),
+
+      updated_at:
+        new Date().toISOString(),
+    };
+
+    const { error } =
+      await supabaseClient
+        .from("calendar_settings")
+        .upsert(nextSettings, {
+          onConflict: "id",
+        });
+
+    if (error) {
+
+      console.error(error);
+
+      alert("캘린더 설정 저장 실패");
+
+      return;
+
+    }
+
+    calendarSettings =
+      nextSettings;
+
+    editingHeroItems =
+      normalizeHeroItems(nextItems);
+
+    selectedHeroIndex =
+      editingHeroItems.length > 0 ? 0 : -1;
+
+    applyCalendarSettings();
+
+    hide(calendarSettingsModal);
+
+    showToast("캘린더 설정 저장 완료");
 
   }
 
@@ -611,7 +2191,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       start: item.start_date,
 
-      end: item.end_date,
+      end: addOneDay(item.end_date),
 
       extendedProps: {
         image: item.image_url || "",
@@ -624,6 +2204,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         category: item.category || CATEGORY_DEFAULT,
         description: item.description || "",
+        textColor: item.text_color || "",
+        textBgColor: item.text_bg_color || "",
+        textBgAlpha: item.text_bg_alpha,
+        textSize: item.text_size,
+        rawEnd: item.end_date || "",
       },
     }));
 
@@ -672,6 +2257,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           image_zoom:
             eventData.extendedProps.imageZoom ?? 100,
+
+          text_color:
+            eventData.extendedProps.textColor || null,
+
+          text_bg_color:
+            eventData.extendedProps.textBgColor || null,
+
+          text_bg_alpha:
+            eventData.extendedProps.textBgAlpha ?? null,
+
+          text_size:
+            eventData.extendedProps.textSize ?? null,
 
         });
 
@@ -730,6 +2327,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           image_zoom:
             eventData.extendedProps.imageZoom ?? 100,
+
+          text_color:
+            eventData.extendedProps.textColor || null,
+
+          text_bg_color:
+            eventData.extendedProps.textBgColor || null,
+
+          text_bg_alpha:
+            eventData.extendedProps.textBgAlpha ?? null,
+
+          text_size:
+            eventData.extendedProps.textSize ?? null,
 
         })
         .eq("id", eventData.id);
@@ -874,6 +2483,28 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           image_zoom:
             subData.image_zoom ?? 100,
+
+          // 메인 이벤트 배너 안 하위 이벤트 이미지 위치 저장
+          calendar_image_pos_x:
+            subData.calendar_image_pos_x ?? 50,
+
+          calendar_image_pos_y:
+            subData.calendar_image_pos_y ?? 50,
+
+          calendar_image_zoom:
+            subData.calendar_image_zoom ?? 100,
+
+          text_color:
+            subData.text_color || null,
+
+          text_bg_color:
+            subData.text_bg_color || null,
+
+          text_bg_alpha:
+            subData.text_bg_alpha ?? null,
+
+          text_size:
+            subData.text_size ?? null,
 
         })
         .eq("id", subData.id);
@@ -1080,7 +2711,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     setValue(startInput, event.startStr);
 
-    setValue(endInput, event.endStr || "");
+    setValue(
+      endInput,
+      event.extendedProps.rawEnd || subtractOneDay(event.endStr) || ""
+    );
 
     setValue(
       categoryInput,
@@ -1090,6 +2724,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     setValue(
       descriptionInput,
       event.extendedProps.description || ""
+    );
+
+    originalEventTextStyle =
+      getEventTextStyleFromProps(event.extendedProps);
+
+    applyTextStyleInputs(
+      "event",
+      originalEventTextStyle
     );
 
     uploadedImage =
@@ -1144,6 +2786,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       imageInput.value = "";
     }
 
+    setupMainSubCalendarEditor(
+      event.extendedProps.subEvents || []
+    );
+
     show(eventModal);
 
   }
@@ -1171,6 +2817,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     setValue(descriptionInput, "");
 
+    originalEventTextStyle = null;
+
+    applyTextStyleInputs("event", {});
+
     uploadedImage =
       "";
 
@@ -1194,6 +2844,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (imageInput) {
       imageInput.value = "";
     }
+
+    setupMainSubCalendarEditor([]);
+
     show(eventModal);
 
   }
@@ -1257,18 +2910,34 @@ document.addEventListener("DOMContentLoaded", async function () {
     const keyword =
       safeValue(searchInput).trim().toLowerCase();
 
-    const filteredEvents =
-      allEvents.filter(event => {
+    const filteredMainEvents =
+      allMainEvents.filter(event => {
 
-        return event.title
-          .toLowerCase()
-          .includes(keyword);
+        const subEvents =
+          event.extendedProps.subEvents || [];
+
+        const matchedMainTitle =
+          event.title
+            .toLowerCase()
+            .includes(keyword);
+
+        const matchedSubTitle =
+          subEvents.some(subEvent => {
+            return (subEvent.title || "")
+              .toLowerCase()
+              .includes(keyword);
+          });
+
+        return matchedMainTitle || matchedSubTitle;
 
       });
 
+    allEvents =
+      createCalendarEvents(filteredMainEvents);
+
     calendar.removeAllEvents();
 
-    filteredEvents.forEach(event => {
+    allEvents.forEach(event => {
 
       calendar.addEvent(event);
 
@@ -1284,26 +2953,284 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   function getCategoryBadge(category) {
 
-  const safeCategory =
-    category || CATEGORY_DEFAULT;
+    const safeCategory =
+      category || CATEGORY_DEFAULT;
 
-  const categoryClassMap = {
-    "업데이트": "category-update",
-    "픽업": "category-pickup",
-    "복각": "category-rerun",
-    "공방": "category-workshop",
-  };
+    const categoryClassMap = {
+      "업데이트": "category-update",
+      "픽업": "category-pickup",
+      "복각": "category-rerun",
+      "공방": "category-workshop",
+    };
 
-  const categoryClass =
-    categoryClassMap[safeCategory] || "category-update";
+    const categoryClass =
+      categoryClassMap[safeCategory] || "category-update";
 
-  return `
+    return `
     <span class="category-badge ${categoryClass}">
       ${safeCategory}
     </span>
   `;
 
-}
+  }
+
+
+
+
+
+  // =========================
+  // 캘린더 표시용 이벤트 생성
+  // DB의 메인/하위 이벤트는 그대로 두고 화면 표시만 분리
+  // =========================
+
+  function createCalendarEvents(mainEvents) {
+
+    const displayEvents = [];
+
+    mainEvents.forEach(mainEvent => {
+
+      displayEvents.push({
+        ...mainEvent,
+
+        end:
+          addOneDay(
+            mainEvent.extendedProps?.rawEnd || mainEvent.end
+          ),
+
+        extendedProps: {
+          ...mainEvent.extendedProps,
+
+          rawEnd:
+            mainEvent.extendedProps?.rawEnd || mainEvent.end || "",
+        },
+      });
+
+      const subEvents =
+        mainEvent.extendedProps.subEvents || [];
+
+      subEvents.forEach(subEvent => {
+
+        if (!subEvent.start_date && !subEvent.end_date) {
+          return;
+        }
+
+        displayEvents.push({
+
+          id:
+            `${mainEvent.id}__sub__${subEvent.id}`,
+
+          title:
+            subEvent.title,
+
+          start:
+            subEvent.start_date || mainEvent.start,
+
+          end:
+            addOneDay(subEvent.end_date || subEvent.start_date),
+
+          editable:
+            false,
+
+          extendedProps: {
+            displayType:
+              "inlineSub",
+
+            parentEventId:
+              mainEvent.id,
+
+            parentEvent:
+              mainEvent,
+
+            subEvent,
+          },
+
+        });
+
+      });
+
+    });
+
+    return displayEvents;
+
+  }
+
+
+
+  // =========================
+  // 메인 이벤트 편집창 하위 배너 선택 UI 구성
+  // =========================
+
+  function setupMainSubCalendarEditor(subEvents = []) {
+
+    currentMainSubEvents =
+      subEvents.map(subEvent => ({ ...subEvent }));
+
+    currentMainSubCalendarSubId =
+      currentMainSubEvents[0]?.id || "";
+
+    if (!mainSubCalendarSelect) return;
+
+    mainSubCalendarSelect.innerHTML = "";
+
+    if (currentMainSubEvents.length === 0) {
+
+      mainSubCalendarSelect.innerHTML =
+        `<option value="">하위 이벤트 없음</option>`;
+
+      setValue(mainSubCalendarImagePosX, 50);
+      setValue(mainSubCalendarImagePosY, 50);
+      setValue(mainSubCalendarImageZoom, 100);
+
+      if (mainSubCalendarImagePosX) mainSubCalendarImagePosX.disabled = true;
+      if (mainSubCalendarImagePosY) mainSubCalendarImagePosY.disabled = true;
+      if (mainSubCalendarImageZoom) mainSubCalendarImageZoom.disabled = true;
+
+      return;
+
+    }
+
+    if (mainSubCalendarImagePosX) mainSubCalendarImagePosX.disabled = false;
+    if (mainSubCalendarImagePosY) mainSubCalendarImagePosY.disabled = false;
+    if (mainSubCalendarImageZoom) mainSubCalendarImageZoom.disabled = false;
+
+    currentMainSubEvents.forEach(subEvent => {
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        subEvent.id;
+
+      option.textContent =
+        subEvent.title || "하위 이벤트";
+
+      mainSubCalendarSelect.appendChild(option);
+
+    });
+
+    setValue(
+      mainSubCalendarSelect,
+      currentMainSubCalendarSubId
+    );
+
+    applySelectedMainSubCalendarValues();
+
+  }
+
+
+
+  // =========================
+  // 선택한 하위 이벤트의 캘린더 배너 이미지값을 UI에 반영
+  // =========================
+
+  function applySelectedMainSubCalendarValues() {
+
+    const selectedSubEvent =
+      currentMainSubEvents.find(subEvent => {
+        return subEvent.id === currentMainSubCalendarSubId;
+      });
+
+    if (!selectedSubEvent) {
+
+      setValue(mainSubCalendarImagePosX, 50);
+      setValue(mainSubCalendarImagePosY, 50);
+      setValue(mainSubCalendarImageZoom, 100);
+
+      return;
+
+    }
+
+    setValue(
+      mainSubCalendarImagePosX,
+      selectedSubEvent.calendar_image_pos_x ??
+      selectedSubEvent.image_pos_x ??
+      50
+    );
+
+    setValue(
+      mainSubCalendarImagePosY,
+      selectedSubEvent.calendar_image_pos_y ??
+      selectedSubEvent.image_pos_y ??
+      50
+    );
+
+    setValue(
+      mainSubCalendarImageZoom,
+      selectedSubEvent.calendar_image_zoom ??
+      selectedSubEvent.image_zoom ??
+      100
+    );
+
+  }
+
+
+
+  // =========================
+  // 메인 편집창에서 선택한 하위 이벤트 배너 이미지 실시간 반영
+  // =========================
+
+  function updateSelectedMainSubCalendarPreview() {
+
+    if (!currentEvent) return;
+
+    const selectedSubEvent =
+      currentMainSubEvents.find(subEvent => {
+        return subEvent.id === currentMainSubCalendarSubId;
+      });
+
+    if (!selectedSubEvent) return;
+
+    selectedSubEvent.calendar_image_pos_x =
+      Number(safeValue(mainSubCalendarImagePosX, 50));
+
+    selectedSubEvent.calendar_image_pos_y =
+      Number(safeValue(mainSubCalendarImagePosY, 50));
+
+    selectedSubEvent.calendar_image_zoom =
+      Number(safeValue(mainSubCalendarImageZoom, 100));
+
+    allMainEvents =
+      allMainEvents.map(event => {
+
+        if (event.id !== currentEvent.id) {
+          return event;
+        }
+
+        const updatedSubEvents =
+          (event.extendedProps.subEvents || []).map(subEvent => {
+
+            if (subEvent.id !== selectedSubEvent.id) {
+              return subEvent;
+            }
+
+            return {
+              ...subEvent,
+              calendar_image_pos_x:
+                selectedSubEvent.calendar_image_pos_x,
+              calendar_image_pos_y:
+                selectedSubEvent.calendar_image_pos_y,
+              calendar_image_zoom:
+                selectedSubEvent.calendar_image_zoom,
+            };
+
+          });
+
+        return {
+          ...event,
+
+          extendedProps: {
+            ...event.extendedProps,
+
+            subEvents:
+              updatedSubEvents,
+          },
+        };
+
+      });
+
+    applySearchFilter();
+
+  }
 
 
 
@@ -1342,6 +3269,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         "--event-color",
         subEvent.color || "#1f2937"
       );
+
+      const subTextStyle = {
+        textColor: subEvent.text_color,
+        bgColor: subEvent.text_bg_color,
+        bgAlpha: subEvent.text_bg_alpha,
+        textSize: subEvent.text_size,
+      };
 
       // =========================
       // 하위 이벤트 이미지 위치
@@ -1400,13 +3334,9 @@ document.addEventListener("DOMContentLoaded", async function () {
               </span>
             </div>
 
-            <div class="sub-event-title">
-              ${subEvent.title}
-            </div>
+            ${textBoxHtml("sub-event-title", subEvent.title, subTextStyle)}
 
-            <div class="sub-event-description">
-              ${subEvent.description || ""}
-            </div>
+            ${textBoxHtml("sub-event-description", subEvent.description || "", subTextStyle)}
 
           </div>
 
@@ -1498,13 +3428,17 @@ document.addEventListener("DOMContentLoaded", async function () {
       detailPeriod.textContent =
         formatPeriod(
           event.startStr,
-          event.endStr
+          event.extendedProps.rawEnd || subtractOneDay(event.endStr)
         );
     }
 
     if (detailDescription) {
-      detailDescription.textContent =
-        event.extendedProps.description || "";
+      detailDescription.innerHTML =
+        textBoxHtml(
+          "detail-description-text",
+          event.extendedProps.description || "",
+          getEventTextStyleFromProps(event.extendedProps)
+        );
     }
 
     if (editMainEventBtn) {
@@ -1572,6 +3506,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     setValue(
       subDescriptionInput,
       subEvent?.description || ""
+    );
+
+    originalSubTextStyle = {
+      textColor: subEvent?.text_color,
+      bgColor: subEvent?.text_bg_color,
+      bgAlpha: subEvent?.text_bg_alpha,
+      textSize: subEvent?.text_size,
+    };
+
+    applyTextStyleInputs(
+      "sub",
+      originalSubTextStyle
     );
 
     uploadedSubImage =
@@ -1642,13 +3588,44 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // =========================
   // 메인 이벤트 로드
+  // 중요: 여기서 오류가 나도 상단 버튼/설정 버튼 이벤트는 아래에서 계속 붙어야 함
   // =========================
+
+  try {
 
   const loadedEvents =
     await loadEventsFromSupabase();
 
+  /* =========================
+     각 메인 이벤트에 하위 이벤트 목록 붙이기
+  ========================= */
+
+  const loadedEventsWithSubEvents =
+    await Promise.all(
+      loadedEvents.map(async (event) => {
+
+        const subEvents =
+          await loadSubEvents(event.id);
+
+        return {
+          ...event,
+
+          extendedProps: {
+            ...event.extendedProps,
+
+            /* 캘린더 표시용 하위 이벤트 목록 */
+            subEvents,
+          },
+        };
+
+      })
+    );
+
+  allMainEvents =
+    [...loadedEventsWithSubEvents];
+
   allEvents =
-    [...loadedEvents];
+    createCalendarEvents(allMainEvents);
 
 
 
@@ -1716,6 +3693,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       eventDrop: async function (info) {
 
+        if (
+          info.event.extendedProps.displayType === "inlineSub"
+        ) {
+
+          info.revert();
+
+          return;
+
+        }
+
         if (!isAdmin) {
 
           info.revert();
@@ -1736,7 +3723,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             info.event.startStr,
 
           end:
-            info.event.endStr,
+            subtractOneDay(info.event.endStr),
 
           extendedProps: {
             image:
@@ -1757,6 +3744,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             imagePosY:
               info.event.extendedProps.imagePosY ?? 50,
+
+            imageZoom:
+              info.event.extendedProps.imageZoom ?? 100,
+
+            rawEnd:
+              subtractOneDay(info.event.endStr) || "",
+
+            subEvents:
+              info.event.extendedProps.subEvents || [],
           },
 
         };
@@ -1774,8 +3770,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         }
 
-        allEvents =
-          allEvents.map(event => {
+        allMainEvents =
+          allMainEvents.map(event => {
 
             if (event.id === eventData.id) {
               return eventData;
@@ -1798,7 +3794,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       // =========================
 
       events:
-        loadedEvents,
+        allEvents,
 
 
 
@@ -1807,6 +3803,90 @@ document.addEventListener("DOMContentLoaded", async function () {
       // =========================
 
       eventContent: function (info) {
+
+        const displayType =
+          info.event.extendedProps.displayType || "main";
+
+        if (displayType === "inlineSub") {
+
+          const subEvent =
+            info.event.extendedProps.subEvent || {};
+
+          const subColor =
+            subEvent.color || "#1f2937";
+
+          const subImage =
+            subEvent.image_url || "";
+
+          const subImagePosX =
+            subEvent.calendar_image_pos_x ??
+            subEvent.image_pos_x ??
+            50;
+
+          const subImagePosY =
+            subEvent.calendar_image_pos_y ??
+            subEvent.image_pos_y ??
+            50;
+
+          const subImageZoom =
+            subEvent.calendar_image_zoom ??
+            subEvent.image_zoom ??
+            100;
+
+          const subImageHtml =
+            subImage
+              ? `
+                <div class="calendar-sub-image-zone">
+                  <img
+                    src="${subImage}"
+                    style="
+                      object-position:
+                        ${subImagePosX}%
+                        ${subImagePosY}%;
+
+                      transform:
+                        scale(${Number(subImageZoom) / 100});
+
+                      transform-origin:
+                        ${subImagePosX}%
+                        ${subImagePosY}%;
+                    "
+                  />
+                </div>
+              `
+              : `<div class="calendar-sub-no-image"></div>`;
+
+          return {
+
+            html: `
+              <div
+                class="calendar-sub-event"
+                data-sub-event-id="${subEvent.id || ""}"
+                data-parent-event-id="${info.event.extendedProps.parentEventId || ""}"
+                style="--event-color: ${subColor};"
+              >
+
+                ${subImageHtml}
+
+                <div class="calendar-sub-overlay">
+                  ${textBoxHtml(
+                    "calendar-sub-title",
+                    subEvent.title || "",
+                    {
+                      textColor: subEvent.text_color,
+                      bgColor: subEvent.text_bg_color,
+                      bgAlpha: subEvent.text_bg_alpha,
+                      textSize: subEvent.text_size,
+                    }
+                  )}
+                </div>
+
+              </div>
+            `,
+
+          };
+
+        }
 
         const image =
           info.event.extendedProps.image;
@@ -1861,10 +3941,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         today.setHours(0, 0, 0, 0);
 
+        const compareTargetDate =
+          info.event.extendedProps.rawEnd
+            || subtractOneDay(info.event.endStr)
+            || info.event.startStr;
+
         const compareDate =
-          info.event.end
-            ? new Date(info.event.end)
-            : new Date(info.event.start);
+          parseLocalDate(compareTargetDate);
 
         compareDate.setHours(0, 0, 0, 0);
 
@@ -1876,7 +3959,8 @@ document.addEventListener("DOMContentLoaded", async function () {
           html: `
             <div
               class="game-event ${isExpired ? "expired" : ""}"
-              style="--event-color: ${color};"
+              data-main-event-id="${info.event.id}"
+              style="--event-color: ${color}; --event-image-width: 33.333%;"
             >
 
               ${imageHtml}
@@ -1885,9 +3969,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 ${getCategoryBadge(category)}
 
-                <div class="title">
-                  ${info.event.title}
-                </div>
+                ${textBoxHtml(
+                  "title",
+                  info.event.title,
+                  getEventTextStyleFromProps(info.event.extendedProps)
+                )}
 
               </div>
 
@@ -1899,44 +3985,66 @@ document.addEventListener("DOMContentLoaded", async function () {
       },
 
 
-
       // =========================
       // 이벤트 표시 후 처리
       // =========================
 
       eventDidMount: function (info) {
 
-        const dayCell =
-          document.querySelector(
-            ".fc-daygrid-day"
-          );
+        info.el.style.setProperty(
+          "--event-image-width",
+          "33.333%"
+        );
 
-        if (dayCell) {
+        const mainEventId =
+          info.event.extendedProps.displayType === "inlineSub"
+            ? info.event.extendedProps.parentEventId
+            : info.event.id;
 
-          const dayWidth =
-            dayCell.getBoundingClientRect().width;
+        const harness =
+          info.el.closest(".fc-daygrid-event-harness");
 
-          const eventWidth =
-            info.el.getBoundingClientRect().width;
-
-          const segmentDays =
-            Math.max(
-              1,
-              Math.round(eventWidth / dayWidth)
-            );
-
-          const imageDays =
-            Math.min(2, segmentDays);
-
-          const imagePercent =
-            (imageDays / segmentDays) * 100;
-
-          info.el.style.setProperty(
-            "--event-image-width",
-            `${imagePercent}%`
-          );
-
+        if (harness && mainEventId) {
+          harness.dataset.groupEventId = mainEventId;
         }
+
+        const setGroupHover = (isHovering) => {
+
+          if (!mainEventId) return;
+
+          document
+            .querySelectorAll(
+              `.fc-daygrid-event-harness[data-group-event-id="${mainEventId}"]`
+            )
+            .forEach(element => {
+              element.classList.toggle(
+                "event-group-hover-harness",
+                isHovering
+              );
+            });
+
+          document
+            .querySelectorAll(
+              `.game-event[data-main-event-id="${mainEventId}"], .calendar-sub-event[data-parent-event-id="${mainEventId}"]`
+            )
+            .forEach(element => {
+              element.classList.toggle(
+                "event-group-hover",
+                isHovering
+              );
+            });
+
+        };
+
+        info.el.addEventListener(
+          "mouseenter",
+          () => setGroupHover(true)
+        );
+
+        info.el.addEventListener(
+          "mouseleave",
+          () => setGroupHover(false)
+        );
 
         // 클릭 = 상세 보기
         info.el.addEventListener(
@@ -1945,8 +4053,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             if (isEditingMainEvent) return;
 
+            const detailEvent =
+              info.event.extendedProps.displayType === "inlineSub"
+                ? (
+                  calendar.getEventById(
+                    info.event.extendedProps.parentEventId
+                  ) || info.event.extendedProps.parentEvent
+                )
+                : info.event;
+
             openDetailModal(
-              info.event
+              detailEvent
             );
 
           }
@@ -1970,7 +4087,27 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 최초 로그인 상태 확인
   // =========================
 
+  await loadCalendarSettings();
+
   await checkLoginStatus();
+
+  } catch (error) {
+
+    console.error("초기 로딩 중 오류", error);
+
+    try {
+      await loadCalendarSettings();
+    } catch (settingsError) {
+      console.error("캘린더 설정 로딩 오류", settingsError);
+    }
+
+    try {
+      await checkLoginStatus();
+    } catch (authError) {
+      console.error("로그인 상태 확인 오류", authError);
+    }
+
+  }
 
 
 
@@ -1996,6 +4133,42 @@ document.addEventListener("DOMContentLoaded", async function () {
       setValue(searchInput, "");
 
       applySearchFilter();
+
+    }
+  );
+
+
+
+  // =========================
+  // 캘린더 설정 버튼
+  // =========================
+
+  editCalendarSettingsBtn?.addEventListener(
+    "click",
+    () => {
+
+      if (!isAdmin) return;
+
+      applyCalendarSettings();
+
+      show(calendarSettingsModal);
+
+    }
+  );
+
+  saveCalendarSettingsBtn?.addEventListener(
+    "click",
+    saveCalendarSettings
+  );
+
+  closeCalendarSettingsBtn?.addEventListener(
+    "click",
+    () => {
+
+      applyCalendarSettings();
+      applySearchFilter();
+
+      hide(calendarSettingsModal);
 
     }
   );
@@ -2217,6 +4390,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       }
 
+      if (currentEvent) {
+
+        currentMainSubEvents =
+          currentMainSubEvents.map(subEvent => {
+
+            if (subEvent.id !== currentMainSubCalendarSubId) {
+              return subEvent;
+            }
+
+            return {
+              ...subEvent,
+
+              calendar_image_pos_x:
+                Number(safeValue(mainSubCalendarImagePosX, 50)),
+
+              calendar_image_pos_y:
+                Number(safeValue(mainSubCalendarImagePosY, 50)),
+
+              calendar_image_zoom:
+                Number(safeValue(mainSubCalendarImageZoom, 100)),
+            };
+
+          });
+
+      }
+
       const eventData = {
 
         id:
@@ -2258,6 +4457,24 @@ document.addEventListener("DOMContentLoaded", async function () {
           category,
 
           description,
+
+          textColor:
+            readTextStyleInputs("event").textColor,
+
+          textBgColor:
+            readTextStyleInputs("event").bgColor,
+
+          textBgAlpha:
+            readTextStyleInputs("event").bgAlpha,
+
+          textSize:
+            readTextStyleInputs("event").textSize,
+
+          rawEnd:
+            end || "",
+
+          subEvents:
+            currentMainSubEvents,
         },
 
       };
@@ -2268,6 +4485,16 @@ document.addEventListener("DOMContentLoaded", async function () {
           : await insertEventToSupabase(eventData);
 
       if (!ok) return;
+
+      if (currentEvent && currentMainSubEvents.length > 0) {
+
+        for (const subEvent of currentMainSubEvents) {
+
+          await updateSubEventInSupabase(subEvent);
+
+        }
+
+      }
 
       if (currentEvent) {
 
@@ -2304,6 +4531,34 @@ document.addEventListener("DOMContentLoaded", async function () {
           description
         );
 
+        const eventTextStyle =
+          readTextStyleInputs("event");
+
+        currentEvent.setExtendedProp(
+          "textColor",
+          eventTextStyle.textColor
+        );
+
+        currentEvent.setExtendedProp(
+          "textBgColor",
+          eventTextStyle.bgColor
+        );
+
+        currentEvent.setExtendedProp(
+          "textBgAlpha",
+          eventTextStyle.bgAlpha
+        );
+
+        currentEvent.setExtendedProp(
+          "textSize",
+          eventTextStyle.textSize
+        );
+
+        currentEvent.setExtendedProp(
+          "rawEnd",
+          end || ""
+        );
+
         // =========================
         // 이미지 위치 즉시 반영
         // =========================
@@ -2329,8 +4584,13 @@ document.addEventListener("DOMContentLoaded", async function () {
           )
         );
 
-        allEvents =
-          allEvents.map(event => {
+        currentEvent.setExtendedProp(
+          "subEvents",
+          currentMainSubEvents
+        );
+
+        allMainEvents =
+          allMainEvents.map(event => {
 
             if (event.id === eventData.id) {
               return eventData;
@@ -2344,7 +4604,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       } else {
 
-        allEvents.push(eventData);
+        allMainEvents.push(eventData);
 
         showToast("추가 완료");
 
@@ -2356,7 +4616,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       isEditingMainEvent = false;
 
       /* 현재 편집 이벤트 참조 해제 */
+      originalEventTextStyle = null;
+
       currentEvent = null;
+      currentMainSubEvents = [];
+      currentMainSubCalendarSubId = "";
 
       hide(eventModal);
 
@@ -2392,8 +4656,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (!ok) return;
 
-      allEvents =
-        allEvents.filter(event => {
+      allMainEvents =
+        allMainEvents.filter(event => {
 
           return event.id !== deletedEventId;
 
@@ -2529,6 +4793,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         description,
 
+        text_color:
+          readTextStyleInputs("sub").textColor,
+
+        text_bg_color:
+          readTextStyleInputs("sub").bgColor,
+
+        text_bg_alpha:
+          readTextStyleInputs("sub").bgAlpha,
+
+        text_size:
+          readTextStyleInputs("sub").textSize,
+
         image_url:
           uploadedSubImage || "",
 
@@ -2554,6 +4830,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             safeValue(subImageZoom, 100)
           ),
 
+        calendar_image_pos_x:
+          currentSubEvent?.calendar_image_pos_x ??
+          Number(safeValue(subImagePosX, 50)),
+
+        calendar_image_pos_y:
+          currentSubEvent?.calendar_image_pos_y ??
+          Number(safeValue(subImagePosY, 50)),
+
+        calendar_image_zoom:
+          currentSubEvent?.calendar_image_zoom ??
+          Number(safeValue(subImageZoom, 100)),
+
       };
 
       const isEditingSubEvent =
@@ -2572,6 +4860,37 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
       renderSubEvents();
+
+      /* =========================
+   하위 이벤트 저장 후
+   캘린더의 메인 이벤트에도 하위 이벤트 목록 즉시 반영
+========================= */
+
+allMainEvents =
+  allMainEvents.map(event => {
+
+    if (event.id === currentDetailEvent.id) {
+
+      return {
+        ...event,
+
+        extendedProps: {
+          ...event.extendedProps,
+
+          subEvents:
+            currentSubEvents,
+        },
+      };
+
+    }
+
+    return event;
+
+  });
+
+applySearchFilter();
+
+      originalSubTextStyle = null;
 
       currentSubEvent =
         null;
@@ -2620,6 +4939,35 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       renderSubEvents();
 
+      /* =========================
+   하위 이벤트 삭제 후
+   캘린더의 메인 이벤트에도 하위 이벤트 목록 즉시 반영
+========================= */
+
+allMainEvents =
+  allMainEvents.map(event => {
+
+    if (event.id === currentDetailEvent.id) {
+
+      return {
+        ...event,
+
+        extendedProps: {
+          ...event.extendedProps,
+
+          subEvents:
+            currentSubEvents,
+        },
+      };
+
+    }
+
+    return event;
+
+  });
+
+applySearchFilter();
+
       currentSubEvent =
         null;
 
@@ -2659,6 +5007,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
       }
+
+      restoreEventTextStylePreview();
 
       /* 메인 이벤트 편집 상태 OFF */
       isEditingMainEvent = false;
@@ -2700,6 +5050,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       }
 
+      restoreSubTextStylePreview();
+
       currentSubEvent =
         null;
 
@@ -2731,8 +5083,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (e.target === eventModal) {
 
+        restoreEventTextStylePreview();
+
         isEditingMainEvent = false;
         currentEvent = null;
+        currentMainSubEvents = [];
+        currentMainSubCalendarSubId = "";
 
         hide(eventModal);
       }
@@ -2746,6 +5102,19 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (e.target === detailModal) {
         hide(detailModal);
+      }
+
+    }
+  );
+
+  calendarSettingsModal?.addEventListener(
+    "click",
+    (e) => {
+
+      if (e.target === calendarSettingsModal) {
+        applyCalendarSettings();
+        applySearchFilter();
+        hide(calendarSettingsModal);
       }
 
     }
@@ -2773,10 +5142,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         }
 
+        restoreSubTextStylePreview();
+
         currentSubEvent =
           null;
 
         hide(subEventModal);
+        hide(calendarSettingsModal);
       }
 
     }
@@ -2798,6 +5170,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         hide(eventModal);
         hide(detailModal);
         hide(subEventModal);
+        hide(calendarSettingsModal);
 
       }
 
