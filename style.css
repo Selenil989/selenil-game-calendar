@@ -3269,3 +3269,28 @@ body {
     font-size: 20px;
   }
 }
+
+
+@media (max-width: 768px) {
+  .sticky-top-area {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+
+  .calendar-hero-list {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    max-width: 100%;
+    overflow-x: visible;
+  }
+
+  .calendar-hero-item {
+    width: calc(50% - 5px);
+    min-width: 140px;
+    max-width: 220px;
+  }
+}
