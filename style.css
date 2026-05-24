@@ -3586,4 +3586,83 @@ body {
   }
 }
 
+/* =========================
+   이번 수정 10차: 상단 이미지 영역 확장 / 위치 슬라이더 실제 반영
+   1. PC에서 상단 이미지가 캘린더 이름과 로그인/로그아웃 버튼 사이 영역을 전부 사용
+   2. 기존 CSS의 object-position !important 때문에 설정창 슬라이더가 무시되던 문제를 CSS 변수 기반으로 보정
+========================= */
+
+.sticky-top-panel .top-bar {
+  grid-template-columns: minmax(180px, max-content) minmax(0, 1fr) auto !important;
+  column-gap: 18px !important;
+}
+
+.sticky-top-panel .calendar-hero-list {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  grid-template-columns: repeat(var(--hero-count, 1), minmax(0, 1fr)) !important;
+}
+
+.sticky-top-panel .calendar-hero-list.hero-count-1,
+.sticky-top-panel .calendar-hero-list.hero-count-2,
+.sticky-top-panel .calendar-hero-list.hero-count-3,
+.sticky-top-panel .calendar-hero-list.hero-count-4,
+.sticky-top-panel .calendar-hero-list.hero-count-5 {
+  max-width: none !important;
+}
+
+.sticky-top-panel .calendar-hero-item {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: clamp(96px, 8.6vw, 148px) !important;
+}
+
+.sticky-top-panel .calendar-hero-list.hero-count-4 .calendar-hero-item,
+.sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+  height: clamp(84px, 7.4vw, 128px) !important;
+}
+
+.calendar-hero-item img,
+.hero-editor-preview img {
+  object-position: var(--hero-pos-x, 50%) var(--hero-pos-y, 50%) !important;
+  transform: scale(var(--hero-scale, 1)) !important;
+  transform-origin: var(--hero-pos-x, 50%) var(--hero-pos-y, 50%) !important;
+}
+
+@media (max-width: 1024px) {
+  .sticky-top-panel .calendar-hero-list {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sticky-top-panel .calendar-hero-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .sticky-top-panel .calendar-hero-item {
+    height: 78px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+    height: 64px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .sticky-top-panel .calendar-hero-item {
+    height: 68px !important;
+  }
+
+  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
+    height: 56px !important;
+  }
+}
 

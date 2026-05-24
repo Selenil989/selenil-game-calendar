@@ -1446,6 +1446,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!item || !item.image) {
 
+      calendarHeroEditorPreview.style.removeProperty("--hero-pos-x");
+      calendarHeroEditorPreview.style.removeProperty("--hero-pos-y");
+      calendarHeroEditorPreview.style.removeProperty("--hero-scale");
+
       calendarHeroEditorPreview.innerHTML =
         `<span class="hero-editor-empty">미리보기</span>`;
 
@@ -1461,6 +1465,21 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const zoom =
       item.zoom ?? 100;
+
+    calendarHeroEditorPreview.style.setProperty(
+      "--hero-pos-x",
+      `${posX}%`
+    );
+
+    calendarHeroEditorPreview.style.setProperty(
+      "--hero-pos-y",
+      `${posY}%`
+    );
+
+    calendarHeroEditorPreview.style.setProperty(
+      "--hero-scale",
+      String(Number(zoom) / 100)
+    );
 
     calendarHeroEditorPreview.innerHTML =
       `
@@ -1677,6 +1696,22 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         heroItem.className =
           "calendar-hero-item";
+
+
+        heroItem.style.setProperty(
+          "--hero-pos-x",
+          `${posX}%`
+        );
+
+        heroItem.style.setProperty(
+          "--hero-pos-y",
+          `${posY}%`
+        );
+
+        heroItem.style.setProperty(
+          "--hero-scale",
+          String(Number(zoom) / 100)
+        );
 
         heroItem.innerHTML =
           `
@@ -2030,6 +2065,22 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       heroItem.className =
         "calendar-hero-item";
+
+
+        heroItem.style.setProperty(
+          "--hero-pos-x",
+          `${posX}%`
+        );
+
+        heroItem.style.setProperty(
+          "--hero-pos-y",
+          `${posY}%`
+        );
+
+        heroItem.style.setProperty(
+          "--hero-scale",
+          String(Number(zoom) / 100)
+        );
 
       heroItem.innerHTML =
         `
