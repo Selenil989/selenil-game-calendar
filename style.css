@@ -3096,23 +3096,17 @@ body {
 ========================= */
 
 .sticky-top-panel {
-  position: sticky;
-  top: 0;
-  z-index: 9000;
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
 
-  margin: -30px -30px 18px;
-  padding: 22px 30px 14px;
+  margin: 0 0 18px !important;
+  padding: 0 !important;
 
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(15, 17, 21, 0.98),
-      rgba(15, 17, 21, 0.94)
-    );
-
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 
 .sticky-top-panel .top-bar {
@@ -3593,64 +3587,3 @@ body {
 }
 
 
-/* =========================
-   이번 수정 10차: PC 상단 이미지 확대 최종 오버라이드
-   - 캘린더 이름과 로그인/로그아웃 버튼 사이 공간을 더 적극적으로 사용
-   - 모바일 기존 2열 / 5개 3열 규칙은 유지
-========================= */
-
-@media (min-width: 1025px) {
-  .sticky-top-panel .top-bar {
-    grid-template-columns: minmax(180px, auto) minmax(0, 1fr) auto !important;
-    gap: 18px !important;
-  }
-
-  .sticky-top-panel .site-title-row h1 {
-    max-width: 300px !important;
-  }
-
-  .sticky-top-panel .calendar-hero-list {
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    gap: 14px !important;
-  }
-
-  .sticky-top-panel .calendar-hero-item {
-    height: clamp(94px, 8.6vw, 138px) !important;
-  }
-
-  .sticky-top-panel .calendar-hero-list.hero-count-1 {
-    max-width: min(520px, 100%) !important;
-  }
-
-  .sticky-top-panel .calendar-hero-list.hero-count-2 {
-    max-width: min(760px, 100%) !important;
-  }
-
-  .sticky-top-panel .calendar-hero-list.hero-count-3 {
-    max-width: min(920px, 100%) !important;
-  }
-
-  .sticky-top-panel .calendar-hero-list.hero-count-4,
-  .sticky-top-panel .calendar-hero-list.hero-count-5 {
-    max-width: min(1000px, 100%) !important;
-  }
-
-  .sticky-top-panel .calendar-hero-list.hero-count-4 .calendar-hero-item,
-  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
-    height: clamp(82px, 7.2vw, 116px) !important;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .sticky-top-panel .calendar-hero-item {
-    height: clamp(86px, 10vw, 118px) !important;
-  }
-
-  .sticky-top-panel .calendar-hero-list.hero-count-4 .calendar-hero-item,
-  .sticky-top-panel .calendar-hero-list.hero-count-5 .calendar-hero-item {
-    height: clamp(76px, 8.5vw, 104px) !important;
-  }
-}
