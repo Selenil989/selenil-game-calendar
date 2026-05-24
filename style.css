@@ -3272,25 +3272,33 @@ body {
 
 
 @media (max-width: 768px) {
-  .sticky-top-area {
+  .sticky-top-panel {
     position: static !important;
     top: auto !important;
     z-index: auto !important;
   }
 
-  .calendar-hero-list {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    gap: 10px;
-    justify-content: center;
-    max-width: 100%;
-    overflow-x: visible;
+  .sticky-top-panel .calendar-hero-list {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+
+    gap: 10px !important;
+
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+
+    padding-bottom: 0 !important;
   }
 
-  .calendar-hero-item {
-    width: calc(50% - 5px);
-    min-width: 140px;
-    max-width: 220px;
+  .sticky-top-panel .calendar-hero-item {
+    flex: 0 0 calc(50% - 5px) !important;
+
+    width: calc(50% - 5px) !important;
+    min-width: 140px !important;
+    max-width: 220px !important;
+
+    height: 80px !important;
   }
 }
